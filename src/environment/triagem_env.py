@@ -61,9 +61,14 @@ class TriagemEnv(gym.Env):
 
     metadata = {"render_modes": ["human", "ansi"], "render_fps": 4}
 
-    def __init__(self, config: Optional[TriagemConfig] = None):
+    def __init__(
+        self,
+        config: Optional[TriagemConfig] = None,
+        render_mode: Optional[str] = None,
+    ):
         super().__init__()
 
+        self.render_mode = render_mode or "human"
         self._config = config or TriagemConfig()
         cfg = self._config
         n = cfg.num_queues
@@ -200,10 +205,11 @@ class TriagemEnv(gym.Env):
 
     # ──────────────────────────────── render ──────────────────────────────
 
-    def render(self, mode: str = "human") -> Optional[str]:
+    def render(self, mode: Optional[str] = None) -> Optional[str]:
         assert self._queue_sizes is not None, "call reset() before render()"
         cfg = self._config
         n = cfg.num_queues
+        render_mode = mode or self.render_mode
 
         bar_len = 20
         pad = " " * 4
@@ -213,9 +219,8 @@ class TriagemEnv(gym.Env):
         bot = "╚" + "═" * 58 + "╝"
 
         lines: list[str] = [top]
-        lines.append(
-            f"{sep}{pad}TRIAGEM ADAPTATIVA — PASSO {self._step:03d}{pad:>27}{sep}"
-        )
+        title = f"{pad}TRIAGEM ADAPTATIVA — PASSO {self._step:03d}"
+        lines.append(f"{sep}{title}{pad:>27}{sep}")
         lines.append(mid)
 
         for i in range(n):
@@ -239,16 +244,18 @@ class TriagemEnv(gym.Env):
             int(bar_len * self._used_capacity / cfg.total_capacity),
         )
         cap_bar = "■" * cap_filled + "░" * (bar_len - cap_filled)
-        lines.append(
+        cap_line = (
             f"{sep}  Capacidade: {cap_bar} "
             f"{self._used_capacity:02d}/{cfg.total_capacity:02d}{pad:>18}{sep}"
         )
+        lines.append(cap_line)
         lines.append(bot)
 
         output = "\n".join(lines)
-        if mode == "ansi":
+        if render_mode == "ansi":
             return output
-        print(output)
+        if render_mode == "human":
+            print(output)
         return None
 
     # ──────────── Métodos internos ────────────
