@@ -7,7 +7,7 @@ para atender, encaminhar ou priorizar filas.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Optional
 
 import gymnasium as gym
@@ -114,6 +114,7 @@ class TriagemEnv(gym.Env):
         super().reset(seed=seed)
         if self._np_random is None:
             import random as _random
+
             self._np_random = np.random.default_rng(
                 _random.SystemRandom().randint(0, 2**31 - 1)
             )
@@ -130,9 +131,7 @@ class TriagemEnv(gym.Env):
 
     # ──────────────────────────────── step ─────────────────────────────────
 
-    def step(
-        self, action: int
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+    def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         assert self._queue_sizes is not None, "call reset() before step()"
         assert self.action_space.contains(action), f"Invalid action {action}"
 
@@ -236,9 +235,7 @@ class TriagemEnv(gym.Env):
                 f"{sep}  Fila {i} (prioridade {cfg.priority_weights[i]:.0f}):  "
                 f"{bar} {size:02d} chamados  {sep}"
             )
-            wait_line = (
-                f"{sep}    ⏱ Espera média: {wait:5.1f} min{pad:>27}{sep}"
-            )
+            wait_line = f"{sep}    ⏱ Espera média: {wait:5.1f} min{pad:>27}{sep}"
             lines.append(queue_line)
             lines.append(wait_line)
 
@@ -296,9 +293,7 @@ class TriagemEnv(gym.Env):
         assert self._queue_sizes is not None
         cfg = self._config
         # Filtrar filas com chamados, ordenar por prioridade (decrescente)
-        candidates = [
-            i for i in range(cfg.num_queues) if self._queue_sizes[i] > 0
-        ]
+        candidates = [i for i in range(cfg.num_queues) if self._queue_sizes[i] > 0]
         if not candidates:
             return None
         # Desempate: maior prioridade; se empatar, maior fila
@@ -338,13 +333,13 @@ class TriagemEnv(gym.Env):
             wait = float(self._avg_wait_times[i])
             if wait > cfg.wait_threshold:
                 if cfg.reward_config == "prioridade":
-                    reward -= cfg.priority_weights[i] * cfg.delay_penalty_coeff * (
-                        wait - cfg.wait_threshold
+                    reward -= (
+                        cfg.priority_weights[i]
+                        * cfg.delay_penalty_coeff
+                        * (wait - cfg.wait_threshold)
                     )
                 else:
-                    reward -= cfg.delay_penalty_coeff * (
-                        wait - cfg.wait_threshold
-                    )
+                    reward -= cfg.delay_penalty_coeff * (wait - cfg.wait_threshold)
 
         return reward
 

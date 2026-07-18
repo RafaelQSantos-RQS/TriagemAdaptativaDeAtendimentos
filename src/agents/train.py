@@ -40,6 +40,7 @@ from src.environment import TriagemConfig
 _HAS_TENSORBOARD: bool = False
 try:
     import torch.utils.tensorboard  # noqa: F401
+
     _HAS_TENSORBOARD = True
 except ImportError:
     pass
@@ -63,6 +64,7 @@ CONFIG_MAP: dict[str, dict[str, str]] = {
 # Seed Handling
 # ─────────────────────────────────────────────────────────────
 
+
 def set_seed(seed: int) -> None:
     """Propaga semente para todas as fontes de aleatoriedade."""
     random.seed(seed)
@@ -75,6 +77,7 @@ def set_seed(seed: int) -> None:
 # ─────────────────────────────────────────────────────────────
 # Environment Factory
 # ─────────────────────────────────────────────────────────────
+
 
 def _make_env(config_name: str, seed: int, rank: int = 0) -> callable:
     """Retorna função que cria um ambiente TriagemAdaptativa monitorado."""
@@ -102,6 +105,7 @@ def create_vec_env(
 # ─────────────────────────────────────────────────────────────
 # Model Factory
 # ─────────────────────────────────────────────────────────────
+
 
 def create_model(algo_name: str, env: VecEnv, seed: int, tb_log_dir: Optional[str]):
     """Cria modelo SB3 com hiperparâmetros conforme AGENTS.md."""
@@ -151,6 +155,7 @@ def create_model(algo_name: str, env: VecEnv, seed: int, tb_log_dir: Optional[st
 # Logging
 # ─────────────────────────────────────────────────────────────
 
+
 def setup_logger(log_dir: str) -> logging.Logger:
     """Configura logger com output para arquivo e console."""
     os.makedirs(log_dir, exist_ok=True)
@@ -181,6 +186,7 @@ def setup_logger(log_dir: str) -> logging.Logger:
 # Treinamento (seed única)
 # ─────────────────────────────────────────────────────────────
 
+
 def train_seed(
     seed: int,
     algo_name: str,
@@ -207,7 +213,9 @@ def train_seed(
     eval_env = create_vec_env(config_name, seed + 1000)
 
     reward_config = CONFIG_MAP[config_name]["reward_config"]
-    logger.info(f"Config {config_name} | Algo: {algo_name.upper()} | Reward: {reward_config}")
+    logger.info(
+        f"Config {config_name} | Algo: {algo_name.upper()} | Reward: {reward_config}"
+    )
     logger.info(f"Total timesteps: {total_timesteps}")
 
     # ── TensorBoard ──
@@ -258,6 +266,7 @@ def train_seed(
 # ─────────────────────────────────────────────────────────────
 # CLI
 # ─────────────────────────────────────────────────────────────
+
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(

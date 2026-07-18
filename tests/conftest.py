@@ -1,7 +1,6 @@
 """Fixtures compartilhadas para testes do ambiente."""
 
 import gymnasium as gym
-import numpy as np
 import pytest
 
 import src.environment  # noqa: F401 — registra o ambiente
