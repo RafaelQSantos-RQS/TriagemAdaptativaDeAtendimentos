@@ -13,3 +13,9 @@ dependencies = [
     "shimmy>=2.0.1",
     "stable-baselines3>=2.9.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
