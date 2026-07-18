@@ -102,6 +102,11 @@ class TriagemEnv(gym.Env):
         options: Optional[dict[str, Any]] = None,
     ) -> tuple[np.ndarray, dict[str, Any]]:
         super().reset(seed=seed)
+        if self._np_random is None:
+            import random as _random
+            self._np_random = np.random.default_rng(
+                _random.SystemRandom().randint(0, 2**31 - 1)
+            )
         self._rng = np.random.default_rng(self._np_random.bit_generator)
 
         n = self._config.num_queues
@@ -129,21 +134,31 @@ class TriagemEnv(gym.Env):
         # 1. Processar ação
         queues_served = np.zeros(n, dtype=np.int32)
 
-        if action == 0:  # serve_priority: atender fila de maior prioridade
+        can_serve = self._used_capacity < cfg.total_capacity
+
+        if action in (0, 1) and not can_serve:
+            reward -= 0.5  # penalidade por tentar servir sem capacidade
+        elif action == 0:  # serve_priority: atender fila de maior prioridade
             served = self._serve_highest_priority()
             if served is not None:
                 queues_served[served] = 1
-                self._used_capacity = min(self._used_capacity + 1, cfg.total_capacity)
+                self._used_capacity += 1
+            else:
+                reward -= 0.3  # penalidade por tentar atender fila vazia
         elif action == 1:  # serve_longest: atender fila mais longa
             served = self._serve_longest_queue()
             if served is not None:
                 queues_served[served] = 1
-                self._used_capacity = min(self._used_capacity + 1, cfg.total_capacity)
+                self._used_capacity += 1
+            else:
+                reward -= 0.3  # penalidade por tentar atender fila vazia
         else:  # 2..K: refer_queue, encaminhar chamado
             queue_idx = action - 2
             if queue_idx < n and self._queue_sizes[queue_idx] > 0:
                 self._queue_sizes[queue_idx] -= 1
                 reward -= cfg.penalty_referral
+            else:
+                reward -= 0.3  # penalidade por encaminhamento inválido
 
         # 2. Chegada de novos chamados (Poisson)
         for i in range(n):
@@ -191,34 +206,44 @@ class TriagemEnv(gym.Env):
         n = cfg.num_queues
 
         bar_len = 20
-        lines: list[str] = []
-        lines.append("=" * 60)
-        lines.append(f"         TRIAGEM ADAPTATIVA — PASSO {self._step:03d}")
-        lines.append("=" * 60)
+        pad = " " * 4
+        sep = "║"
+        top = "╔" + "═" * 58 + "╗"
+        mid = "╠" + "═" * 58 + "╣"
+        bot = "╚" + "═" * 58 + "╝"
+
+        lines: list[str] = [top]
+        lines.append(
+            f"{sep}{pad}TRIAGEM ADAPTATIVA — PASSO {self._step:03d}{pad:>27}{sep}"
+        )
+        lines.append(mid)
 
         for i in range(n):
             size = int(self._queue_sizes[i])
             wait = float(self._avg_wait_times[i])
             filled = min(bar_len, int(bar_len * size / cfg.max_queue_size))
             bar = "█" * filled + "░" * (bar_len - filled)
-            lines.append(
-                f"  Fila {i} (prioridade {cfg.priority_weights[i]:.0f}):  "
-                f"{bar} {size:02d} chamados"
+            queue_line = (
+                f"{sep}  Fila {i} (prioridade {cfg.priority_weights[i]:.0f}):  "
+                f"{bar} {size:02d} chamados  {sep}"
             )
-            lines.append(f"    ⏱ Espera média: {wait:.1f} min")
+            wait_line = (
+                f"{sep}    ⏱ Espera média: {wait:5.1f} min{pad:>27}{sep}"
+            )
+            lines.append(queue_line)
+            lines.append(wait_line)
 
-        lines.append("-" * 60)
-        cap_bar_len = 20
+        lines.append(mid)
         cap_filled = min(
-            cap_bar_len,
-            int(cap_bar_len * self._used_capacity / cfg.total_capacity),
+            bar_len,
+            int(bar_len * self._used_capacity / cfg.total_capacity),
         )
-        cap_bar = "■" * cap_filled + "░" * (cap_bar_len - cap_filled)
+        cap_bar = "■" * cap_filled + "░" * (bar_len - cap_filled)
         lines.append(
-            f"  Capacidade: {cap_bar} "
-            f"{self._used_capacity:02d}/{cfg.total_capacity:02d}"
+            f"{sep}  Capacidade: {cap_bar} "
+            f"{self._used_capacity:02d}/{cfg.total_capacity:02d}{pad:>18}{sep}"
         )
-        lines.append("=" * 60)
+        lines.append(bot)
 
         output = "\n".join(lines)
         if mode == "ansi":
