@@ -68,7 +68,7 @@ class TriagemEnv(gym.Env):
     ):
         super().__init__()
 
-        self.render_mode = render_mode or "human"
+        self.render_mode = render_mode
         self._config = config or TriagemConfig()
         cfg = self._config
         n = cfg.num_queues
@@ -205,11 +205,10 @@ class TriagemEnv(gym.Env):
 
     # ──────────────────────────────── render ──────────────────────────────
 
-    def render(self, mode: Optional[str] = None) -> Optional[str]:
+    def render(self) -> Optional[str]:
         assert self._queue_sizes is not None, "call reset() before render()"
         cfg = self._config
         n = cfg.num_queues
-        render_mode = mode or self.render_mode
 
         bar_len = 20
         pad = " " * 4
@@ -252,9 +251,9 @@ class TriagemEnv(gym.Env):
         lines.append(bot)
 
         output = "\n".join(lines)
-        if render_mode == "ansi":
+        if self.render_mode == "ansi":
             return output
-        if render_mode == "human":
+        if self.render_mode == "human":
             print(output)
         return None
 
