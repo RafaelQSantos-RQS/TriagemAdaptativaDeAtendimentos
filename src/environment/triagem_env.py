@@ -13,6 +13,7 @@ from typing import Any, Optional
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
+from gymnasium.envs.registration import EnvSpec
 
 
 @dataclass
@@ -69,6 +70,10 @@ class TriagemEnv(gym.Env):
         super().__init__()
 
         self.render_mode = render_mode
+        self.spec = EnvSpec(
+            id="TriagemAdaptativa-v0",
+            entry_point="src.environment.triagem_env:TriagemEnv",
+        )
         self._config = config or TriagemConfig()
         cfg = self._config
         n = cfg.num_queues

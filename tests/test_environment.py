@@ -443,9 +443,10 @@ class TestGymnasiumCheck:
         assert env_gym.spec is not None
         assert env_gym.spec.id == "TriagemAdaptativa-v0"
 
-    def test_check_env_no_spec_direct(self, env):
-        """TriagemEnv() direto não tem .spec (esperado)."""
-        assert env.spec is None
+    def test_check_env_spec_direct(self, env):
+        """TriagemEnv() direto também tem .spec (definido no __init__)."""
+        assert env.spec is not None
+        assert env.spec.id == "TriagemAdaptativa-v0"
 
 
 # ═══════════════════════════════════════════════════════════════
