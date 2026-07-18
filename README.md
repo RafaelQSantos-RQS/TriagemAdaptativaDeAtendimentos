@@ -60,7 +60,8 @@ TriagemAdaptativaDeAtendimentos/
 │   │   └── entregaveis-avaliacao.md     # Entregáveis e critérios de avaliação
 │   └── professor/                       # Documentos originais (.docx)
 ├── src/                                 # Código-fonte (em desenvolvimento)
-│   ├── env/                             # Ambiente Gymnasium
+│   ├── environment/                     # Ambiente Gymnasium
+│   │   ├── __init__.py
 │   │   └── triagem_env.py
 │   ├── agents/                          # Algoritmos e configurações de treino
 │   │   ├── train.py
@@ -124,7 +125,7 @@ python src/baselines/heuristic.py --strategy priority
 python src/agents/eval.py --model models/ppo_seed_42.zip --episodes 100
 
 # Visualizar ambiente
-python src/env/triagem_env.py --render human
+python -c "from src.environment import TriagemEnv; TriagemEnv().render()"
 
 # Gerar gráficos de análise
 python src/analysis/plot_results.py --experiment experiments/seed_42/
