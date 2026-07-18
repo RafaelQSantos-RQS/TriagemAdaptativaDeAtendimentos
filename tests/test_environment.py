@@ -16,6 +16,7 @@ from src.environment import TriagemConfig, TriagemEnv
 # 3.1 / 3.2 — Contrato Gymnasium + reset
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestReset:
     """Comportamento do reset() — Spec 3.2."""
 
@@ -53,6 +54,7 @@ class TestReset:
 # ═══════════════════════════════════════════════════════════════
 # 3.3 — Comportamento do step
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestStep:
     """Comportamento do step(action) — Spec 3.3."""
@@ -103,6 +105,7 @@ class TestStep:
 # 3.4 — Configurações do Ambiente
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestConfig:
     """Configurações — Spec 3.4."""
 
@@ -149,6 +152,7 @@ class TestConfig:
 # ═══════════════════════════════════════════════════════════════
 # 3.5 — Visualização (render)
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestRender:
     """Visualização — Spec 3.5."""
@@ -197,6 +201,7 @@ class TestRender:
 # 3.6 — Elementos de Complexidade (testes conceituais)
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestComplexidade:
     """Elementos de complexidade — Spec 3.6."""
 
@@ -232,6 +237,7 @@ class TestComplexidade:
 # ═══════════════════════════════════════════════════════════════
 # 3.7 — Casos Limite
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestEdgeCases:
     """Casos limite — Spec 3.7."""
@@ -300,6 +306,7 @@ class TestEdgeCases:
 # Terminação
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestTermination:
     """Condições de término do episódio."""
 
@@ -337,6 +344,7 @@ class TestTermination:
 # Reward
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestReward:
     """Funções de recompensa configuráveis."""
 
@@ -370,7 +378,6 @@ class TestReward:
     def test_delay_penalty(self, env):
         """Atraso acumula penalidade."""
         env.reset(seed=42)
-        cfg = env._config  # noqa: SLF001
         # Simular filas com espera alta
         env._avg_wait_times[:] = [10.0, 10.0, 10.0]  # noqa: SLF001 — acima do threshold
         env._queue_sizes[:] = [1, 1, 1]  # noqa: SLF001
@@ -384,6 +391,7 @@ class TestReward:
 # ═══════════════════════════════════════════════════════════════
 # Observation & Action Spaces
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestSpaces:
     """Espaços de observação e ação."""
@@ -427,6 +435,7 @@ class TestSpaces:
 # Gymnasium Validation
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestGymnasiumCheck:
     """Validação via gymnasium.utils.env_checker."""
 
@@ -453,6 +462,7 @@ class TestGymnasiumCheck:
 # Registro via gym.make
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestGymMake:
     """Ambiente via gym.make funciona corretamente."""
 
@@ -473,11 +483,11 @@ class TestGymMake:
         assert isinstance(out, str)
 
     def test_gym_make_seed_reproducibility(self):
-       env_a = gym.make("TriagemAdaptativa-v0")
-       env_b = gym.make("TriagemAdaptativa-v0")
-       obs_a, _ = env_a.reset(seed=42)
-       obs_b, _ = env_b.reset(seed=42)
-       assert np.array_equal(obs_a, obs_b)
+        env_a = gym.make("TriagemAdaptativa-v0")
+        env_b = gym.make("TriagemAdaptativa-v0")
+        obs_a, _ = env_a.reset(seed=42)
+        obs_b, _ = env_b.reset(seed=42)
+        assert np.array_equal(obs_a, obs_b)
 
     def test_gym_make_different_seeds(self):
         env_a = gym.make("TriagemAdaptativa-v0")
@@ -490,6 +500,7 @@ class TestGymMake:
 # ═══════════════════════════════════════════════════════════════
 # Ações específicas
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestAcoes:
     """Efeito de cada ação no ambiente."""
@@ -527,6 +538,7 @@ class TestAcoes:
 # Info dict
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestInfo:
     """Dicionário info retornado por reset() e step()."""
 
@@ -550,6 +562,7 @@ class TestInfo:
 # ═══════════════════════════════════════════════════════════════
 # Capacidade
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestCapacidade:
     """Gerenciamento de capacidade."""
