@@ -143,6 +143,23 @@ python src/analysis/plot_results.py --experiment experiments/seed_42/
 
 ---
 
+## 📐 Documentação de Desenvolvimento
+
+| Documento | Descrição |
+|---|---|
+| [`AGENTS.md`](AGENTS.md) | Algoritmos, hiperparâmetros, baselines e configurações experimentais |
+| [`.specs/00-index.md`](.specs/00-index.md) | Índice master de todas as especificações |
+| [`.specs/01-problem-definition.md`](.specs/01-problem-definition.md) | Definição do problema e justificativa RL |
+| [`.specs/02-mdp-formulation.md`](.specs/02-mdp-formulation.md) | Formulação MDP: estados, ações, recompensas |
+| [`.specs/03-environment-specs.md`](.specs/03-environment-specs.md) | Especificação do ambiente Gymnasium |
+| [`.specs/04-agent-specs.md`](.specs/04-agent-specs.md) | Especificação dos agentes e baselines |
+| [`.specs/05-experimental-protocol.md`](.specs/05-experimental-protocol.md) | Protocolo experimental e reprodutibilidade |
+| [`.specs/06-evaluation-metrics.md`](.specs/06-evaluation-metrics.md) | Métricas de avaliação e critérios de sucesso |
+
+> **Nota**: Todos os documentos em `.specs/` possuem frontmatter YAML com tags para busca automatizada por agentes de IA.
+
+---
+
 ## 📚 Documentação de Apoio
 
 | Documento | Descrição |
