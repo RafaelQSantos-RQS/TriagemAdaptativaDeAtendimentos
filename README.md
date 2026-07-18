@@ -124,7 +124,16 @@ python src/baselines/heuristic.py --strategy priority
 # Avaliar agente treinado
 python src/agents/eval.py --model models/ppo_seed_42.zip --episodes 100
 
-# Visualizar ambiente
+# Visualizar ambiente (uso moderno Gymnasium)
+python -c "
+import gymnasium as gym
+import src.environment  # noqa: F401 — registra o ambiente
+env = gym.make('TriagemAdaptativa-v0')
+env.reset()
+env.render()
+"
+
+# Ou diretamente (uso clássico)
 python -c "from src.environment import TriagemEnv; TriagemEnv().render()"
 
 # Gerar gráficos de análise
