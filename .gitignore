@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Modelos treinados e artefatos de treino
+models/**/model.zip
+models/**/best_model.zip
+experiments/**/evaluations.npz
+experiments/**/*.log
+experiments/**/tensorboard/

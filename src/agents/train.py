@@ -4,10 +4,8 @@
 Uso:
     python -m src.agents.train --seed 42
     python -m src.agents.train --algo ppo --config A --seed 42
-    python -m src.agents.train --total-timesteps 50000  # teste rápido
-
-    # Todas as 5 sementes (default):
-    python -m src.agents.train
+    python -m src.agents.train --total-timesteps 50000
+    python -m src.agents.train  # todas as 5 sementes
 """
 
 from __future__ import annotations
@@ -28,15 +26,12 @@ from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecEnv
 
-# Torna importável como script direto (python src/agents/train.py)
 if __name__ == "__main__" and "src" not in sys.modules:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-import src.environment  # noqa: F401 — registra o ambiente
+import src.environment  # noqa: F401
 from src.environment import TriagemConfig
 
-
-# TensorBoard é opcional — SB3 requer só se tensorboard_log for definido
 _HAS_TENSORBOARD: bool = False
 try:
     import torch.utils.tensorboard  # noqa: F401
@@ -45,13 +40,7 @@ try:
 except ImportError:
     pass
 
-# ─────────────────────────────────────────────────────────────
-# Constantes
-# ─────────────────────────────────────────────────────────────
-
 SEEDS: list[int] = [42, 123, 256, 789, 1024]
-
-ALGO_CLASSES = {"ppo": PPO, "dqn": DQN}
 
 CONFIG_MAP: dict[str, dict[str, str]] = {
     "A": {"algo": "ppo", "reward_config": "produtividade"},
@@ -60,13 +49,12 @@ CONFIG_MAP: dict[str, dict[str, str]] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────
-# Seed Handling
-# ─────────────────────────────────────────────────────────────
-
-
 def set_seed(seed: int) -> None:
-    """Propaga semente para todas as fontes de aleatoriedade."""
+    """Propaga a semente para todas as fontes de aleatoriedade.
+
+    Args:
+        seed: Semente mestre para reprodutibilidade.
+    """
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -74,13 +62,17 @@ def set_seed(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
-# ─────────────────────────────────────────────────────────────
-# Environment Factory
-# ─────────────────────────────────────────────────────────────
+def _make_env(config_name: str, seed: int, rank: int = 0):
+    """Factory para criar ambientes monitorados.
 
+    Args:
+        config_name: Identificador da configuração (A, B, C).
+        seed: Semente base para o ambiente.
+        rank: Índice para diferenciar múltiplas cópias.
 
-def _make_env(config_name: str, seed: int, rank: int = 0) -> callable:
-    """Retorna função que cria um ambiente TriagemAdaptativa monitorado."""
+    Returns:
+        Função que instancia um ambiente TriagemAdaptativa com Monitor.
+    """
 
     def _init() -> gym.Env:
         cfg = TriagemConfig(
@@ -93,33 +85,37 @@ def _make_env(config_name: str, seed: int, rank: int = 0) -> callable:
     return _init
 
 
-def create_vec_env(
-    config_name: str,
-    seed: int,
-    n_envs: int = 1,
-) -> VecEnv:
-    """Cria ambiente vetorizado para treino SB3."""
+def create_vec_env(config_name: str, seed: int, n_envs: int = 1) -> VecEnv:
+    """Cria ambiente vetorizado para treino com SB3.
+
+    Args:
+        config_name: Identificador da configuração (A, B, C).
+        seed: Semente base.
+        n_envs: Número de ambientes paralelos.
+
+    Returns:
+        Ambiente vetorizado DummyVecEnv.
+    """
     return DummyVecEnv([_make_env(config_name, seed, i) for i in range(n_envs)])
 
 
-# ─────────────────────────────────────────────────────────────
-# Model Factory
-# ─────────────────────────────────────────────────────────────
-
-
 def create_model(algo_name: str, env: VecEnv, seed: int, tb_log_dir: Optional[str]):
-    """Cria modelo SB3 com hiperparâmetros conforme AGENTS.md."""
-    # TensorBoard só é configurado se o pacote estiver instalado
+    """Instancia modelo SB3 com hiperparâmetros conforme AGENTS.md.
+
+    Args:
+        algo_name: "ppo" ou "dqn".
+        env: Ambiente vetorizado de treino.
+        seed: Semente para o modelo.
+        tb_log_dir: Diretório para logs TensorBoard (None se não instalado).
+
+    Returns:
+        Modelo PPO ou DQN configurado.
+    """
     if tb_log_dir and not _HAS_TENSORBOARD:
-        print("⚠️  tensorboard não instalado. Instale com: uv pip install tensorboard")
+        print("⚠️  tensorboard ausente. Instale com: uv pip install tensorboard")
         tb_log_dir = None
 
-    common = {
-        "policy": "MlpPolicy",
-        "env": env,
-        "verbose": 1,
-        "seed": seed,
-    }
+    common = {"policy": "MlpPolicy", "env": env, "verbose": 1, "seed": seed}
     if tb_log_dir:
         common["tensorboard_log"] = tb_log_dir
 
@@ -151,13 +147,15 @@ def create_model(algo_name: str, env: VecEnv, seed: int, tb_log_dir: Optional[st
     raise ValueError(f"Algoritmo desconhecido: {algo_name}")
 
 
-# ─────────────────────────────────────────────────────────────
-# Logging
-# ─────────────────────────────────────────────────────────────
-
-
 def setup_logger(log_dir: str) -> logging.Logger:
-    """Configura logger com output para arquivo e console."""
+    """Configura logger com saída para arquivo e console.
+
+    Args:
+        log_dir: Diretório onde o arquivo train.log será criado.
+
+    Returns:
+        Logger configurado.
+    """
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, "train.log")
 
@@ -178,13 +176,7 @@ def setup_logger(log_dir: str) -> logging.Logger:
 
     logger.addHandler(fh)
     logger.addHandler(ch)
-
     return logger
-
-
-# ─────────────────────────────────────────────────────────────
-# Treinamento (seed única)
-# ─────────────────────────────────────────────────────────────
 
 
 def train_seed(
@@ -195,7 +187,19 @@ def train_seed(
     render: bool = False,
     tb_dir: Optional[str] = None,
 ) -> str:
-    """Treina agente para uma semente e retorna caminho do modelo salvo."""
+    """Treina um agente para uma semente e retorna o caminho do modelo.
+
+    Args:
+        seed: Semente para reprodutibilidade.
+        algo_name: Algoritmo ("ppo" | "dqn").
+        config_name: Configuração experimental ("A" | "B" | "C").
+        total_timesteps: Número total de passos de treino.
+        render: Se True, renderiza o ambiente.
+        tb_dir: Diretório para logs TensorBoard.
+
+    Returns:
+        Caminho absoluto para o modelo salvo (.zip).
+    """
     config_label = f"config_{config_name.lower()}"
     model_dir = os.path.join("models", config_label, f"seed_{seed:03d}")
     exp_dir = os.path.join("experiments", config_label, f"seed_{seed:03d}")
@@ -203,25 +207,17 @@ def train_seed(
     os.makedirs(exp_dir, exist_ok=True)
 
     logger = setup_logger(exp_dir)
-
-    # ── Seed ──
     set_seed(seed)
     logger.info(f"Seed {seed} — numpy, random, torch, gymnasium, SB3")
 
-    # ── Ambientes ──
     train_env = create_vec_env(config_name, seed)
     eval_env = create_vec_env(config_name, seed + 1000)
-
     reward_config = CONFIG_MAP[config_name]["reward_config"]
     logger.info(
-        f"Config {config_name} | Algo: {algo_name.upper()} | Reward: {reward_config}"
+        f"Config {config_name} | {algo_name.upper()} | Reward: {reward_config} | Steps: {total_timesteps}"
     )
-    logger.info(f"Total timesteps: {total_timesteps}")
 
-    # ── TensorBoard ──
     tb_log_dir = tb_dir or os.path.join(exp_dir, "tensorboard")
-
-    # ── Callback de avaliação ──
     eval_callback = EvalCallback(
         eval_env,
         best_model_save_path=model_dir,
@@ -233,11 +229,9 @@ def train_seed(
         verbose=0,
     )
 
-    # ── Modelo ──
     model = create_model(algo_name, train_env, seed, tb_log_dir)
     logger.info(f"Modelo {algo_name.upper()} inicializado")
 
-    # ── Treino ──
     logger.info("Treino iniciado...")
     try:
         model.learn(
@@ -255,20 +249,21 @@ def train_seed(
         train_env.close()
         eval_env.close()
 
-    # ── Salvar modelo final ──
     model_path = os.path.join(model_dir, "model.zip")
     model.save(model_path)
     logger.info(f"Modelo salvo: {model_path}")
-
     return model_path
 
 
-# ─────────────────────────────────────────────────────────────
-# CLI
-# ─────────────────────────────────────────────────────────────
-
-
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Analisa argumentos de linha de comando.
+
+    Args:
+        argv: Lista de argumentos (usa sys.argv se None).
+
+    Returns:
+        Namespace com os argumentos parseados.
+    """
     parser = argparse.ArgumentParser(
         description="Treinar agente RL para Triagem Adaptativa de Atendimentos",
     )
@@ -276,7 +271,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--seed",
         type=int,
         default=None,
-        help="Semente específica (default: todas as 5: 42, 123, 256, 789, 1024)",
+        help="Semente específica (default: todas: 42, 123, 256, 789, 1024)",
     )
     parser.add_argument(
         "--algo",
@@ -296,40 +291,35 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--total-timesteps",
         type=int,
         default=200_000,
-        help="Timesteps de treino (default: 200000)",
-    )
-    parser.add_argument(
-        "--render",
-        action="store_true",
-        help="Renderizar ambiente durante treino (default: False)",
+        help="Passos de treino (default: 200000)",
     )
     parser.add_argument(
         "--tensorboard",
         type=str,
         default=None,
-        help="Diretório raiz para logs TensorBoard",
+        help="Diretório para logs TensorBoard",
     )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Ponto de entrada: treina agente para uma ou mais sementes.
+
+    Args:
+        argv: Argumentos da linha de comando.
+    """
     args = parse_args(argv)
     seeds: list[int] = [args.seed] if args.seed is not None else SEEDS
 
     for seed in seeds:
-        header = f"  Treinando Config {args.config} | Algo: {args.algo.upper()} | Seed: {seed}  "
-        print()
-        print("=" * len(header))
-        print(header)
-        print("=" * len(header))
-        print()
-
+        header = f"  Config {args.config} | {args.algo.upper()} | Seed {seed}  "
+        print(f"\n{'=' * len(header)}\n{header}\n{'=' * len(header)}\n")
         train_seed(
             seed=seed,
             algo_name=args.algo,
             config_name=args.config,
             total_timesteps=args.total_timesteps,
-            render=args.render,
+            render=False,
             tb_dir=args.tensorboard,
         )
 
