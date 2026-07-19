@@ -1,0 +1,511 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Análise qualitativa do agente de triagem",
+    "generatedAt": "2026-07-19T14:20:54.508404+00:00",
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "layout": "full",
+        "body": "# Análise qualitativa do agente de triagem"
+      },
+      {
+        "id": "summary",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Resumo técnico\n\nForam avaliados **100 episódios determinísticos** da Config A, modelo seed 123. O critério reward ≥ 0 classificou **31 sucessos** e **69 falhas**. Os três maiores sucessos e as três menores falhas foram dissecados; por serem extremos, eles esclarecem mecanismos de comportamento, mas não representam a frequência de um episódio típico.\n\nNos episódios bem-sucedidos, a ação mais frequente foi **Atender maior prioridade** (92.6%); nas falhas, foi **Atender maior prioridade** (82.9%). A diferença é descritiva e não demonstra causalidade."
+      },
+      {
+        "id": "selected_cases_intro",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Seis episódios revelam os mecanismos dos extremos\n\nA tabela resume os casos selecionados. As seções seguintes mostram como a política mudou entre as fases do episódio."
+      },
+      {
+        "id": "selected_cases_table_block",
+        "type": "table",
+        "layout": "full",
+        "tableId": "selected_cases_table"
+      },
+      {
+        "id": "success_1",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Sucesso: episódio 25 (seed 10025)\n\n**Reward:** 58.8 · **Resolvidos/chegadas:** 83/85 (97.6%) · **Término:** Horizonte máximo\n\n- Ação dominante: Atender maior prioridade (98%).\n- Resolvidos nas filas 0/1/2: 28/39/16.\n- Filas finais 0/1/2: 0/1/1.\n- Espera máxima nas filas 0/1/2: 14/6/2 passos.\n- Decisões sem atendimento: 17.0%.\n\n| Fase | Ação dominante | Reward da fase | Resolvidos |\n|---|---|---:|---:|\n| Inicial | Atender maior prioridade (94%) | 20.3 | 25 |\n| Intermediária | Atender maior prioridade (100%) | 14.6 | 28 |\n| Final | Atender maior prioridade (100%) | 23.9 | 30 |\n\n**Leitura do comportamento.** O episódio combinou alta cobertura da demanda com poucas decisões sem atendimento; o reward não foi consumido pelas penalidades de espera."
+      },
+      {
+        "id": "success_2",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Sucesso: episódio 37 (seed 10037)\n\n**Reward:** 53.0 · **Resolvidos/chegadas:** 85/87 (97.7%) · **Término:** Horizonte máximo\n\n- Ação dominante: Atender maior prioridade (96%).\n- Resolvidos nas filas 0/1/2: 29/37/19.\n- Filas finais 0/1/2: 0/2/0.\n- Espera máxima nas filas 0/1/2: 18/11/2 passos.\n- Decisões sem atendimento: 15.0%.\n\n| Fase | Ação dominante | Reward da fase | Resolvidos |\n|---|---|---:|---:|\n| Inicial | Atender maior prioridade (97%) | 17.9 | 23 |\n| Intermediária | Atender maior prioridade (91%) | 12.2 | 32 |\n| Final | Atender maior prioridade (100%) | 22.9 | 30 |\n\n**Leitura do comportamento.** O episódio combinou alta cobertura da demanda com poucas decisões sem atendimento; o reward não foi consumido pelas penalidades de espera."
+      },
+      {
+        "id": "success_3",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Sucesso: episódio 2 (seed 10002)\n\n**Reward:** 49.4 · **Resolvidos/chegadas:** 83/89 (93.3%) · **Término:** Horizonte máximo\n\n- Ação dominante: Atender maior prioridade (97%).\n- Resolvidos nas filas 0/1/2: 29/43/11.\n- Filas finais 0/1/2: 4/1/1.\n- Espera máxima nas filas 0/1/2: 22/8/2 passos.\n- Decisões sem atendimento: 17.0%.\n\n| Fase | Ação dominante | Reward da fase | Resolvidos |\n|---|---|---:|---:|\n| Inicial | Atender maior prioridade (91%) | 16.9 | 27 |\n| Intermediária | Atender maior prioridade (100%) | 21.0 | 24 |\n| Final | Atender maior prioridade (100%) | 11.5 | 32 |\n\n**Leitura do comportamento.** O episódio combinou alta cobertura da demanda com poucas decisões sem atendimento; o reward não foi consumido pelas penalidades de espera."
+      },
+      {
+        "id": "failure_1",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Falha: episódio 73 (seed 10073)\n\n**Reward:** -479.1 · **Resolvidos/chegadas:** 99/121 (81.8%) · **Término:** Horizonte máximo\n\n- Ação dominante: Atender maior prioridade (65%).\n- Resolvidos nas filas 0/1/2: 36/44/19.\n- Filas finais 0/1/2: 1/13/8.\n- Espera máxima nas filas 0/1/2: 79/58/26 passos.\n- Decisões sem atendimento: 1.0%.\n\n| Fase | Ação dominante | Reward da fase | Resolvidos |\n|---|---|---:|---:|\n| Inicial | Atender maior prioridade (82%) | -16.4 | 32 |\n| Intermediária | Atender maior prioridade (100%) | -168.3 | 33 |\n| Final | Encaminhar fila 0 (82%) | -294.4 | 34 |\n\n**Leitura do comportamento.** A taxa de resolução foi 81.8%; a demanda não atendida permaneceu tempo suficiente para gerar penalidades."
+      },
+      {
+        "id": "failure_2",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Falha: episódio 69 (seed 10069)\n\n**Reward:** -411.2 · **Resolvidos/chegadas:** 99/132 (75.0%) · **Término:** Horizonte máximo\n\n- Ação dominante: Atender maior prioridade (70%).\n- Resolvidos nas filas 0/1/2: 31/51/17.\n- Filas finais 0/1/2: 11/16/6.\n- Espera máxima nas filas 0/1/2: 71/64/18 passos.\n- Decisões sem atendimento: 1.0%.\n\n| Fase | Ação dominante | Reward da fase | Resolvidos |\n|---|---|---:|---:|\n| Inicial | Atender maior prioridade (61%) | -21.9 | 32 |\n| Intermediária | Atender maior prioridade (100%) | -122.1 | 33 |\n| Final | Atender maior prioridade (50%) | -267.2 | 34 |\n\n**Leitura do comportamento.** A taxa de resolução foi 75.0%; a demanda não atendida permaneceu tempo suficiente para gerar penalidades."
+      },
+      {
+        "id": "failure_3",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Falha: episódio 55 (seed 10055)\n\n**Reward:** -405.2 · **Resolvidos/chegadas:** 97/124 (78.2%) · **Término:** Horizonte máximo\n\n- Ação dominante: Atender maior prioridade (87%).\n- Resolvidos nas filas 0/1/2: 14/52/31.\n- Filas finais 0/1/2: 16/11/0.\n- Espera máxima nas filas 0/1/2: 63/76/8 passos.\n- Decisões sem atendimento: 3.0%.\n\n| Fase | Ação dominante | Reward da fase | Resolvidos |\n|---|---|---:|---:|\n| Inicial | Atender maior prioridade (70%) | -10.9 | 30 |\n| Intermediária | Atender maior prioridade (91%) | -88.3 | 33 |\n| Final | Atender maior prioridade (100%) | -306.0 | 34 |\n\n**Leitura do comportamento.** A taxa de resolução foi 78.2%; a demanda não atendida permaneceu tempo suficiente para gerar penalidades."
+      },
+      {
+        "id": "action_distribution",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Distribuição de ações em sucessos e falhas\n\nNos episódios bem-sucedidos, a ação mais frequente foi **Atender maior prioridade** (92.6%); nas falhas, foi **Atender maior prioridade** (82.9%). A diferença é descritiva e não demonstra causalidade. O gráfico facilita a comparação visual; a tabela abaixo preserva contagens e percentuais exatos."
+      },
+      {
+        "id": "action_distribution_chart_block",
+        "type": "chart",
+        "layout": "full",
+        "chartId": "action_distribution_chart"
+      },
+      {
+        "id": "action_distribution_table_block",
+        "type": "table",
+        "layout": "full",
+        "tableId": "action_distribution_table"
+      },
+      {
+        "id": "definitions",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Escopo, dados e definições\n\n- **Agente:** Config A, modelo treinado com seed 123.\n- **Coorte:** seeds de ambiente 10000 a 10099.\n- **Sucesso:** reward total do episódio maior ou igual a zero.\n- **Falha:** reward total negativo.\n- **Distribuição de ações:** percentual calculado sobre todos os passos dos episódios do respectivo grupo, não sobre episódios.\n- **Ação sem atendimento:** passo em que `total_served` não aumentou."
+      },
+      {
+        "id": "methodology",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Método de seleção e diagnóstico\n\nA política foi executada deterministicamente. Os sucessos foram ordenados por reward decrescente e as falhas por reward crescente. Cada trajetória foi segmentada em três terços do horizonte de 100 passos. O diagnóstico de falha usa somente sinais observáveis: sobrecarga, taxa de resolução, decisões sem atendimento e espera máxima. Assim, os diagnósticos são descritivos e não causais."
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Limitações e robustez\n\nA análise usa um único checkpoint (Config A, uma seed de treinamento) e uma sequência fixa de seeds de ambiente. Os seis casos são extremos e podem exagerar diferenças. A comparação das distribuições usa todos os episódios para reduzir esse viés, mas não controla o estado enfrentado quando cada ação foi escolhida. Uma análise causal exigiria comparar ações alternativas nos mesmos estados."
+      },
+      {
+        "id": "next_steps",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Próximos passos recomendados\n\n1. Repetir a análise para as Configs B e C somente quando a comparação qualitativa entre objetivos for necessária.\n2. Estratificar a distribuição de ações por carga e espera das filas.\n3. Revisar estados com ação sem atendimento para separar fila vazia de limite de capacidade."
+      },
+      {
+        "id": "questions",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Questões em aberto\n\n- A política mudaria de ação nos mesmos estados sob outra seed de treino?\n- Quais ações reduzem espera sem sacrificar a taxa total de resolução?\n- Os padrões observados persistem sob taxas de chegada diferentes?"
+      }
+    ],
+    "tables": [
+      {
+        "id": "selected_cases_table",
+        "dataset": "selected_cases",
+        "title": "Episódios selecionados",
+        "columns": [
+          {
+            "field": "selection",
+            "label": "Seleção"
+          },
+          {
+            "field": "episode_index",
+            "label": "Episódio"
+          },
+          {
+            "field": "env_seed",
+            "label": "Seed"
+          },
+          {
+            "field": "reward",
+            "label": "Reward",
+            "format": "number"
+          },
+          {
+            "field": "service_rate",
+            "label": "Taxa resolvida",
+            "format": "percent"
+          },
+          {
+            "field": "dominant_action",
+            "label": "Ação dominante"
+          }
+        ],
+        "defaultSort": {
+          "field": "reward",
+          "direction": "desc"
+        },
+        "source": {
+          "query": {
+            "engine": "sqlite",
+            "id": "selected-cases",
+            "sql": "SELECT *\nFROM selected_cases\nORDER BY CASE selection WHEN 'Top sucesso' THEN 0 ELSE 1 END, reward DESC",
+            "description": "Ordena os seis episódios extremos selecionados para a tabela."
+          }
+        }
+      },
+      {
+        "id": "action_distribution_table",
+        "dataset": "action_distribution",
+        "title": "Tabela de distribuição de ações",
+        "columns": [
+          {
+            "field": "action",
+            "label": "Ação"
+          },
+          {
+            "field": "count_all",
+            "label": "Total",
+            "format": "number"
+          },
+          {
+            "field": "pct_all",
+            "label": "% total",
+            "format": "percent"
+          },
+          {
+            "field": "count_success",
+            "label": "Sucessos",
+            "format": "number"
+          },
+          {
+            "field": "pct_success",
+            "label": "% sucessos",
+            "format": "percent"
+          },
+          {
+            "field": "count_failure",
+            "label": "Falhas",
+            "format": "number"
+          },
+          {
+            "field": "pct_failure",
+            "label": "% falhas",
+            "format": "percent"
+          }
+        ],
+        "source": {
+          "query": {
+            "engine": "sqlite",
+            "id": "action-distribution-table",
+            "sql": "SELECT action_id, action, count_all, pct_all, count_success, pct_success,\n       count_failure, pct_failure\nFROM action_distribution\nORDER BY action_id",
+            "description": "Recupera contagens e percentuais por ação para a tabela."
+          }
+        }
+      }
+    ],
+    "charts": [
+      {
+        "id": "action_distribution_chart",
+        "title": "Distribuição de ações por resultado",
+        "subtitle": "Percentual de todos os passos do respectivo grupo",
+        "intent": "comparison",
+        "question": "Como a frequência das ações difere entre episódios bem-sucedidos e episódios com falha?",
+        "rationale": "Barras horizontais agrupadas permitem comparar os dois resultados e acomodam rótulos longos das ações.",
+        "comparisonContext": {
+          "denominator": "Todos os passos dos episódios do grupo",
+          "unit": "Percentual dos passos"
+        },
+        "type": "horizontalBar",
+        "dataset": "action_distribution_chart",
+        "encodings": {
+          "x": {
+            "field": "action",
+            "type": "nominal",
+            "label": "Ação"
+          },
+          "y": {
+            "field": "percentage",
+            "type": "quantitative",
+            "format": "percent",
+            "label": "Percentual dos passos"
+          },
+          "color": {
+            "field": "outcome",
+            "type": "nominal",
+            "label": "Resultado"
+          }
+        },
+        "palette": {
+          "kind": "categorical",
+          "name": "analysis"
+        },
+        "legend": {
+          "position": "bottom",
+          "title": "Resultado"
+        },
+        "labels": {
+          "values": "auto"
+        },
+        "settings": {
+          "groupMode": "grouped",
+          "orientation": "horizontal",
+          "categoryLabelPolicy": "wrap",
+          "sort": "none"
+        },
+        "valueFormat": "percent",
+        "layout": "full",
+        "source": {
+          "query": {
+            "engine": "sqlite",
+            "id": "action-distribution-chart",
+            "sql": "WITH chart_rows AS (\n    SELECT action_id, action, 'Sucesso' AS outcome, pct_success AS percentage\n    FROM action_distribution\n    UNION ALL\n    SELECT action_id, action, 'Falha' AS outcome, pct_failure AS percentage\n    FROM action_distribution\n)\nSELECT action, outcome, percentage\nFROM chart_rows\nORDER BY action_id, CASE outcome WHEN 'Sucesso' THEN 0 ELSE 1 END",
+            "description": "Converte os percentuais de sucesso e falha para formato longo."
+          }
+        }
+      }
+    ],
+    "cards": [],
+    "sources": []
+  },
+  "snapshot": {
+    "version": 1,
+    "status": "ready",
+    "generatedAt": "2026-07-19T14:20:54.508404+00:00",
+    "datasets": {
+      "selected_cases": [
+        {
+          "episode_index": 25,
+          "env_seed": 10025,
+          "selection": "Top sucesso",
+          "outcome": "Sucesso",
+          "reward": 58.80000000000001,
+          "steps": 100,
+          "termination_reason": "Horizonte máximo",
+          "total_served": 83,
+          "total_arrivals": 85,
+          "service_rate": 0.9764705882352941,
+          "no_service_ratio": 0.17,
+          "dominant_action": "Atender maior prioridade (98%)",
+          "served_queue_0": 28,
+          "final_queue_0": 0,
+          "max_wait_queue_0": 14.0,
+          "served_queue_1": 39,
+          "final_queue_1": 1,
+          "max_wait_queue_1": 6.0,
+          "served_queue_2": 16,
+          "final_queue_2": 1,
+          "max_wait_queue_2": 2.0
+        },
+        {
+          "episode_index": 37,
+          "env_seed": 10037,
+          "selection": "Top sucesso",
+          "outcome": "Sucesso",
+          "reward": 52.99999999999999,
+          "steps": 100,
+          "termination_reason": "Horizonte máximo",
+          "total_served": 85,
+          "total_arrivals": 87,
+          "service_rate": 0.9770114942528736,
+          "no_service_ratio": 0.15,
+          "dominant_action": "Atender maior prioridade (96%)",
+          "served_queue_0": 29,
+          "final_queue_0": 0,
+          "max_wait_queue_0": 18.0,
+          "served_queue_1": 37,
+          "final_queue_1": 2,
+          "max_wait_queue_1": 11.0,
+          "served_queue_2": 19,
+          "final_queue_2": 0,
+          "max_wait_queue_2": 2.0
+        },
+        {
+          "episode_index": 2,
+          "env_seed": 10002,
+          "selection": "Top sucesso",
+          "outcome": "Sucesso",
+          "reward": 49.39999999999999,
+          "steps": 100,
+          "termination_reason": "Horizonte máximo",
+          "total_served": 83,
+          "total_arrivals": 89,
+          "service_rate": 0.9325842696629213,
+          "no_service_ratio": 0.17,
+          "dominant_action": "Atender maior prioridade (97%)",
+          "served_queue_0": 29,
+          "final_queue_0": 4,
+          "max_wait_queue_0": 22.0,
+          "served_queue_1": 43,
+          "final_queue_1": 1,
+          "max_wait_queue_1": 8.0,
+          "served_queue_2": 11,
+          "final_queue_2": 1,
+          "max_wait_queue_2": 2.0
+        },
+        {
+          "episode_index": 55,
+          "env_seed": 10055,
+          "selection": "Pior falha",
+          "outcome": "Falha",
+          "reward": -405.2,
+          "steps": 100,
+          "termination_reason": "Horizonte máximo",
+          "total_served": 97,
+          "total_arrivals": 124,
+          "service_rate": 0.782258064516129,
+          "no_service_ratio": 0.03,
+          "dominant_action": "Atender maior prioridade (87%)",
+          "served_queue_0": 14,
+          "final_queue_0": 16,
+          "max_wait_queue_0": 63.0,
+          "served_queue_1": 52,
+          "final_queue_1": 11,
+          "max_wait_queue_1": 76.0,
+          "served_queue_2": 31,
+          "final_queue_2": 0,
+          "max_wait_queue_2": 8.0
+        },
+        {
+          "episode_index": 69,
+          "env_seed": 10069,
+          "selection": "Pior falha",
+          "outcome": "Falha",
+          "reward": -411.2,
+          "steps": 100,
+          "termination_reason": "Horizonte máximo",
+          "total_served": 99,
+          "total_arrivals": 132,
+          "service_rate": 0.75,
+          "no_service_ratio": 0.01,
+          "dominant_action": "Atender maior prioridade (70%)",
+          "served_queue_0": 31,
+          "final_queue_0": 11,
+          "max_wait_queue_0": 71.0,
+          "served_queue_1": 51,
+          "final_queue_1": 16,
+          "max_wait_queue_1": 64.0,
+          "served_queue_2": 17,
+          "final_queue_2": 6,
+          "max_wait_queue_2": 18.0
+        },
+        {
+          "episode_index": 73,
+          "env_seed": 10073,
+          "selection": "Pior falha",
+          "outcome": "Falha",
+          "reward": -479.09999999999997,
+          "steps": 100,
+          "termination_reason": "Horizonte máximo",
+          "total_served": 99,
+          "total_arrivals": 121,
+          "service_rate": 0.8181818181818182,
+          "no_service_ratio": 0.01,
+          "dominant_action": "Atender maior prioridade (65%)",
+          "served_queue_0": 36,
+          "final_queue_0": 1,
+          "max_wait_queue_0": 79.0,
+          "served_queue_1": 44,
+          "final_queue_1": 13,
+          "max_wait_queue_1": 58.0,
+          "served_queue_2": 19,
+          "final_queue_2": 8,
+          "max_wait_queue_2": 26.0
+        }
+      ],
+      "action_distribution": [
+        {
+          "action_id": 0,
+          "action": "Atender maior prioridade",
+          "count_all": 8593,
+          "pct_all": 0.8593,
+          "count_success": 2872,
+          "pct_success": 0.9264516129032258,
+          "count_failure": 5721,
+          "pct_failure": 0.8291304347826087
+        },
+        {
+          "action_id": 1,
+          "action": "Atender fila mais longa",
+          "count_all": 524,
+          "pct_all": 0.0524,
+          "count_success": 151,
+          "pct_success": 0.048709677419354835,
+          "count_failure": 373,
+          "pct_failure": 0.05405797101449275
+        },
+        {
+          "action_id": 2,
+          "action": "Encaminhar fila 0",
+          "count_all": 883,
+          "pct_all": 0.0883,
+          "count_success": 77,
+          "pct_success": 0.024838709677419354,
+          "count_failure": 806,
+          "pct_failure": 0.11681159420289855
+        },
+        {
+          "action_id": 3,
+          "action": "Encaminhar fila 1",
+          "count_all": 0,
+          "pct_all": 0.0,
+          "count_success": 0,
+          "pct_success": 0.0,
+          "count_failure": 0,
+          "pct_failure": 0.0
+        }
+      ],
+      "action_distribution_chart": [
+        {
+          "action": "Atender maior prioridade",
+          "outcome": "Sucesso",
+          "percentage": 0.9264516129032258
+        },
+        {
+          "action": "Atender maior prioridade",
+          "outcome": "Falha",
+          "percentage": 0.8291304347826087
+        },
+        {
+          "action": "Atender fila mais longa",
+          "outcome": "Sucesso",
+          "percentage": 0.048709677419354835
+        },
+        {
+          "action": "Atender fila mais longa",
+          "outcome": "Falha",
+          "percentage": 0.05405797101449275
+        },
+        {
+          "action": "Encaminhar fila 0",
+          "outcome": "Sucesso",
+          "percentage": 0.024838709677419354
+        },
+        {
+          "action": "Encaminhar fila 0",
+          "outcome": "Falha",
+          "percentage": 0.11681159420289855
+        },
+        {
+          "action": "Encaminhar fila 1",
+          "outcome": "Sucesso",
+          "percentage": 0.0
+        },
+        {
+          "action": "Encaminhar fila 1",
+          "outcome": "Falha",
+          "percentage": 0.0
+        }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": []
+}

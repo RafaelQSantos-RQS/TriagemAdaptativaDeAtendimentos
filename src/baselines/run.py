@@ -70,10 +70,14 @@ def evaluate_baseline(
     steps_list: list[int] = []
     total_served = 0
     total_arrivals = 0
+    costs: list[float] = []
+    served_by_queue = np.zeros(NUM_QUEUES, dtype=np.int64)
 
     env = gym.make("TriagemAdaptativa-v0", config=cfg)
     for ep in range(episodes):
-        obs, _info = env.reset(seed=seed + ep)
+        episode_seed = seed + ep
+        obs, _info = env.reset(seed=episode_seed)
+        episode_rng = random.Random(episode_seed)
 
         terminated = False
         truncated = False
@@ -81,7 +85,7 @@ def evaluate_baseline(
         ep_steps = 0
 
         while not (terminated or truncated):
-            action = _select_action(module, name, obs, env)
+            action = _select_action(module, name, obs, env, episode_rng)
             obs, reward, terminated, truncated, info = env.step(action)
             ep_reward += reward
             ep_steps += 1
@@ -90,6 +94,8 @@ def evaluate_baseline(
         steps_list.append(ep_steps)
         total_served += int(info.get("total_served", 0))
         total_arrivals += int(info.get("total_arrivals", 0))
+        costs.append(float(info.get("total_cost", 0.0)))
+        served_by_queue += np.asarray(info.get("served_by_queue", 0), dtype=np.int64)
 
     env.close()
 
@@ -102,11 +108,20 @@ def evaluate_baseline(
         "std_reward": float(rewards_arr.std()),
         "min_reward": float(rewards_arr.min()),
         "max_reward": float(rewards_arr.max()),
-        "success_rate": float(np.mean(np.array(rewards) >= 0)),
+        "success_rate": (
+            float(total_served / total_arrivals) if total_arrivals else 0.0
+        ),
+        "nonnegative_reward_rate": float(np.mean(rewards_arr >= 0)),
         "mean_steps": float(np.mean(steps_list)),
         "std_steps": float(np.std(steps_list)),
+        "mean_cost": float(np.mean(costs)),
+        "std_cost": float(np.std(costs)),
         "total_served": int(total_served),
         "total_arrivals": int(total_arrivals),
+        **{
+            f"mean_served_queue_{queue}": float(served_by_queue[queue] / episodes)
+            for queue in range(NUM_QUEUES)
+        },
     }
 
 
@@ -115,6 +130,7 @@ def _select_action(
     name: str,
     obs: np.ndarray,
     env: gym.Env,
+    rng: random.Random,
 ) -> int:
     """Chama o seletor de ação da baseline com a assinatura correta.
 
@@ -123,7 +139,7 @@ def _select_action(
     """
     n = int(env.action_space.n) if hasattr(env.action_space, "n") else NUM_QUEUES + 1
     if name == "aleatorio":
-        return module.select_action(obs, n, random.Random())
+        return module.select_action(obs, n, rng)
     return module.select_action(obs, n)
 
 
@@ -149,10 +165,16 @@ def save_results(results: list[dict[str, float]], output_dir: str) -> str:
         "min_reward",
         "max_reward",
         "success_rate",
+        "nonnegative_reward_rate",
         "mean_steps",
         "std_steps",
+        "mean_cost",
+        "std_cost",
         "total_served",
         "total_arrivals",
+        "mean_served_queue_0",
+        "mean_served_queue_1",
+        "mean_served_queue_2",
     ]
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)

@@ -1,0 +1,7 @@
+method,group,mean_reward,success_rate,mean_steps,mean_cost,std_reward_between_seeds,n_seeds,episodes_per_seed
+A — PPO Produtividade,agent,-78.669800,0.917560,100.000000,159.063800,11.784802,5,100
+B — PPO Prioridade,agent,-136.284600,0.917780,100.000000,227.884600,10.358308,5,100
+C — DQN Produtividade,agent,-112.653000,0.912132,100.000000,202.685000,16.919520,5,100
+Aleatório,baseline,-418.930000,0.889118,100.000000,467.116000,19.268971,5,100
+Prioridade Fixa,baseline,-137.194800,0.917780,100.000000,228.838800,11.073640,5,100
+Fila Mais Longa,baseline,-416.307400,0.917780,100.000000,507.951400,36.565777,5,100

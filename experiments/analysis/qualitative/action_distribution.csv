@@ -1,0 +1,5 @@
+action_id,action,count_all,pct_all,count_success,pct_success,count_failure,pct_failure
+0,Atender maior prioridade,8593,0.8593,2872,0.9264516129032258,5721,0.8291304347826087
+1,Atender fila mais longa,524,0.0524,151,0.048709677419354835,373,0.05405797101449275
+2,Encaminhar fila 0,883,0.0883,77,0.024838709677419354,806,0.11681159420289855
+3,Encaminhar fila 1,0,0.0,0,0.0,0,0.0

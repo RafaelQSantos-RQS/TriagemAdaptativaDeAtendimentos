@@ -80,8 +80,13 @@ TriagemAdaptativaDeAtendimentos/
 │   │   ├── fixed_priority.py          #   Sempre atende fila de maior prioridade
 │   │   ├── longest_queue.py           #   Sempre atende fila com mais chamados
 │   │   └── run.py                     #   Avaliação de todas as baselines
-│   ├── analysis/                      # Análise experimental
-│   │   └── (em desenvolvimento)
+│   ├── analysis/                      # Análises e relatórios experimentais
+│   │   ├── learning_curves.py
+│   │   ├── agent_vs_baselines.py
+│   │   ├── queue_analysis.py
+│   │   ├── qualitative_analysis.py
+│   │   ├── surprise_seed.py
+│   │   └── summary_table.py
 │   └── utils/                         # Utilitários
 │       └── (em desenvolvimento)
 ├── tests/                             # Testes automatizados
@@ -94,7 +99,10 @@ TriagemAdaptativaDeAtendimentos/
 ├── experiments/                       # Resultados e logs
 │   ├── config_{label}/seed_{NNN}/     #   Logs de treino
 │   ├── baselines/                     #   Resultados das baselines
-│   └── results/                       #   Resultados da avaliação de agentes
+│   ├── results/                       #   Resultados da avaliação de agentes
+│   └── analysis/                      #   Gráficos, tabelas e relatórios
+├── run_analysis.ps1                  # Todas as análises no PowerShell
+├── run_analysis.sh                   # Todas as análises no Bash/Git Bash
 ├── run_pipeline.sh                    # Pipeline completo (treino + avaliação)
 ├── AGENTS.md                          # Hiperparâmetros e configurações
 ├── README.md
@@ -198,8 +206,8 @@ uv run python -m src.baselines.run --episodes 10
 ### Avaliar agentes treinados
 
 ```bash
-# Avaliar todas as configs (100 episódios × 5 seeds × 3 configs = 1500 episódios)
-uv run python -m src.agents.eval
+# Avaliar todas as configs com reward comum para comparação
+uv run python -m src.agents.eval --evaluation-reward produtividade
 
 # Teste rápido
 uv run python -m src.agents.eval --episodes 10
@@ -208,12 +216,182 @@ uv run python -m src.agents.eval --episodes 10
 uv run python -m src.agents.eval --config A
 ```
 
+### Gerar curvas de aprendizado
+
+Após o término dos treinamentos das configurações A, B e C:
+
+```bash
+uv run python -m src.analysis.learning_curves
+```
+
+O comando usa as cinco seeds, gera um gráfico individual por configuração,
+um comparativo entre A/B/C e um CSV com as médias e desvios padrão em
+`experiments/analysis/learning_curves/`.
+
+Durante o treinamento, uma prévia com as seeds já concluídas pode ser gerada com:
+
+```bash
+uv run python -m src.analysis.learning_curves --allow-partial
+```
+
+### Comparar agentes com as baselines
+
+Após o treino, avalie todos os agentes com a mesma função de recompensa usada
+pelas baselines e gere o gráfico comparativo:
+
+```bash
+uv run python -m src.agents.eval --evaluation-reward produtividade
+uv run python -m src.analysis.agent_vs_baselines
+```
+
+O gráfico de barras e o CSV agregado são salvos em
+`experiments/analysis/agent_vs_baselines/`. Cada barra mostra o reward médio
+entre as cinco seeds; as barras de erro mostram o desvio padrão entre seeds.
+
+### Analisar chamados resolvidos por fila
+
+As avaliações de agentes e baselines também registram a média de chamados
+resolvidos por episódio em cada fila. Gere a análise com:
+
+```bash
+uv run python -m src.analysis.queue_analysis
+```
+
+O gráfico com um painel por fila e o CSV agregado são salvos em
+`experiments/analysis/by_queue/`.
+
+### Gerar análise qualitativa
+
+A análise qualitativa usa, por padrão, a Config A com o modelo da seed 123,
+seleciona os três maiores sucessos e as três piores falhas e registra a
+distribuição de ações:
+
+```bash
+uv run python -m src.analysis.qualitative_analysis
+```
+
+Os resumos, trajetórias passo a passo, tabela de ações e `artifact.json` do
+relatório são salvos em `experiments/analysis/qualitative/`.
+
+### Avaliar uma seed surpresa
+
+Para avaliar os 15 checkpoints em uma seed de ambiente não vista e comparar
+com os resultados das seeds de treinamento:
+
+```bash
+uv run python -m src.analysis.surprise_seed --surprise-seed 999
+```
+
+Na apresentação, substitua `999` pela seed solicitada. A seed informada gera
+100 seeds de episódio distintas, compartilhadas por todos os modelos e sem
+interseção com as seeds de treinamento. Os CSVs, a lista auditável de seeds,
+o `artifact.json` e, quando o empacotador local estiver disponível, o relatório
+HTML são salvos em
+`experiments/analysis/surprise_seed/seed_<seed>/`.
+
+Para uma verificação rápida somente da Config A:
+
+```bash
+uv run python -m src.analysis.surprise_seed --surprise-seed 999 --config A --episodes 10
+```
+
+O critério de generalização segue
+[as métricas especificadas](.specs/06-evaluation-metrics.md): queda de até 5%
+é boa generalização, de 5% a 15% é moderada e acima de 15% é degradação
+severa. Como os rewards de referência podem ser negativos, a queda relativa
+usa o valor absoluto do reward de referência como denominador.
+
+### Gerar a tabela-resumo final
+
+Depois de avaliar agentes e baselines com 100 episódios por seed:
+
+```bash
+uv run python -m src.analysis.summary_table
+```
+
+O comando gera `summary_table.csv` e `summary_table.md` em
+`experiments/analysis/summary/`. Resultados atuais:
+
+| Configuração | Reward médio | Taxa de sucesso | Passos/ep | Custo acum. | Std dev entre seeds |
+|---|---:|---:|---:|---:|---:|
+| A — PPO Produtividade | -78.67 | 91.76% | 100.00 | 159.06 | 11.78 |
+| B — PPO Prioridade | -136.28 | 91.78% | 100.00 | 227.88 | 10.36 |
+| C — DQN Produtividade | -112.65 | 91.21% | 100.00 | 202.69 | 16.92 |
+| Aleatório | -418.93 | 88.91% | 100.00 | 467.12 | 19.27 |
+| Prioridade Fixa | -137.19 | 91.78% | 100.00 | 228.84 | 11.07 |
+| Fila Mais Longa | -416.31 | 91.78% | 100.00 | 507.95 | 36.57 |
+
+Definições utilizadas:
+
+- **Taxa de sucesso:** total de chamados resolvidos dividido pelo total de
+  chegadas, agregado com os numeradores e denominadores das cinco seeds.
+- **Custo acumulado:** soma das penalidades por atraso, encaminhamento,
+  descarte, ação inválida e capacidade indisponível; a tabela mostra a média
+  por episódio.
+- **Std dev:** desvio padrão amostral entre os cinco rewards médios, um por
+  seed de treinamento.
+- Na análise qualitativa, “sucesso” tem definição própria: episódio com reward
+  total maior ou igual a zero, usada somente para selecionar os casos extremos.
+
+### Gerar todas as análises sem treinar novamente
+
+PowerShell:
+
+```powershell
+.\run_analysis.ps1 -SurpriseSeed 999
+```
+
+Bash ou Git Bash:
+
+```bash
+bash run_analysis.sh 999
+```
+
+Os scripts reavaliam os checkpoints e baselines, geram as curvas de
+aprendizado, comparação por reward, análise por fila, análise qualitativa,
+tabela-resumo e relatório da seed surpresa. A seed pode ser substituída pelo
+valor solicitado na apresentação.
+
 ### Pipeline completo
 
 ```bash
-# Treina todas as configs (A, B, C) + avalia baselines
+# Treina A, B e C e depois gera todas as avaliações e análises
 bash run_pipeline.sh
 ```
+
+## Status dos requisitos experimentais
+
+A implementação foi conferida contra o
+[protocolo experimental](.specs/05-experimental-protocol.md) e as
+[métricas de avaliação](.specs/06-evaluation-metrics.md).
+
+| Requisito | Status | Evidência gerada |
+|---|---|---|
+| Curvas A, B e C com média de 5 seeds e banda de DP | Concluído | 3 gráficos individuais + `learning_curves_comparison.png` |
+| Agentes vs baselines com barras de erro | Concluído | `agent_vs_baselines_reward.png` |
+| Chamados resolvidos por fila | Concluído | `resolved_by_queue.png` + CSV por fila |
+| Três sucessos e três falhas documentados | Concluído | relatório qualitativo + trajetórias passo a passo |
+| Distribuição de ações | Concluído | tabela CSV e gráfico no relatório qualitativo |
+| Seed surpresa nos 15 modelos | Concluído | seed 999, 100 episódios por checkpoint |
+| Relatório de generalização | Concluído | `generalization_report.html` |
+| Tabela-resumo real com seis métodos | Concluído | CSV e Markdown em `experiments/analysis/summary/` |
+| Pelo menos quatro gráficos | Concluído | 6 arquivos PNG, além dos gráficos dos relatórios HTML |
+
+### Conclusão atual da seed 999
+
+- Config A: degradação de aproximadamente 7,0% — generalização moderada.
+- Config B: degradação de aproximadamente 16,0% — degradação severa.
+- Config C: degradação de aproximadamente 13,0% — generalização moderada.
+
+### Limitações que devem ser citadas
+
+- Uma única seed surpresa não demonstra generalização universal; ela testa uma
+  coorte não vista específica.
+- As barras de erro mostram dispersão entre seeds, mas ainda não constituem um
+  teste formal de significância estatística.
+- A análise por fila usa três painéis comparáveis, em vez de barras empilhadas.
+  Isso evita tratar métodos concorrentes como partes de um mesmo total e mantém
+  o desvio padrão visível.
 
 ### Visualizar o ambiente
 

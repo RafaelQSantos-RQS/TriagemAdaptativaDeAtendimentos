@@ -1,8 +1,10 @@
-"""Testes dos contadores total_arrivals e total_served no info dict.
+"""Testes dos contadores de chegadas e atendimentos no info dict.
 
 Verifica se o ambiente expõe corretamente a quantidade de chamados
 que chegaram e foram atendidos durante um episódio.
 """
+
+import numpy as np
 
 from src.environment import TriagemConfig, TriagemEnv
 
@@ -116,6 +118,54 @@ class TestTotalServed:
         assert info["total_served"] == 3
 
 
+class TestServedByQueue:
+    """Contador acumulado de chamados resolvidos por fila."""
+
+    def test_info_has_zeroed_counter_after_reset(self):
+        env = TriagemEnv()
+
+        _, info = env.reset(seed=42)
+
+        np.testing.assert_array_equal(info["served_by_queue"], [0, 0, 0])
+
+    def test_priority_service_counts_selected_queue(self):
+        env = TriagemEnv()
+        env.reset(seed=42)
+        env._queue_sizes[:] = [3, 2, 1]  # noqa: SLF001
+
+        _, _, _, _, info = env.step(0)
+
+        np.testing.assert_array_equal(info["served_by_queue"], [0, 0, 1])
+
+    def test_referral_counts_selected_queue(self):
+        env = TriagemEnv()
+        env.reset(seed=42)
+        env._queue_sizes[1] = 2  # noqa: SLF001
+
+        _, _, _, _, info = env.step(3)
+
+        np.testing.assert_array_equal(info["served_by_queue"], [0, 1, 0])
+
+    def test_queue_sum_matches_total_served(self):
+        env = TriagemEnv()
+        env.reset(seed=42)
+        env._queue_sizes[:] = [5, 5, 5]  # noqa: SLF001
+        for action in (0, 1, 2, 3):
+            _, _, _, _, info = env.step(action)
+
+        assert int(info["served_by_queue"].sum()) == info["total_served"]
+
+    def test_counter_resets_between_episodes(self):
+        env = TriagemEnv()
+        env.reset(seed=42)
+        env._queue_sizes[0] = 2  # noqa: SLF001
+        env.step(2)
+
+        _, info = env.reset(seed=123)
+
+        np.testing.assert_array_equal(info["served_by_queue"], [0, 0, 0])
+
+
 class TestCountersConsistency:
     """Consistência entre total_arrivals e total_served."""
 
@@ -147,3 +197,33 @@ class TestCountersConsistency:
         # total_arrivals + total_served devem ter valores consistentes
         assert info["total_arrivals"] >= 0
         assert info["total_served"] >= 0
+
+
+class TestAccumulatedCost:
+    """Custo acumulado inclui todas as contribuições negativas do reward."""
+
+    def test_cost_starts_at_zero_and_is_exposed(self):
+        env = TriagemEnv(TriagemConfig(arrival_rates=(0.0, 0.0, 0.0)))
+
+        _, info = env.reset(seed=42)
+
+        assert info["total_cost"] == 0.0
+
+    def test_invalid_service_accumulates_penalty_as_positive_cost(self):
+        env = TriagemEnv(TriagemConfig(arrival_rates=(0.0, 0.0, 0.0)))
+        env.reset(seed=42)
+
+        _, reward, _, _, info = env.step(0)
+
+        assert reward == -0.3
+        assert info["total_cost"] == 0.3
+
+    def test_successful_service_has_no_cost_without_delay(self):
+        env = TriagemEnv(TriagemConfig(arrival_rates=(0.0, 0.0, 0.0)))
+        env.reset(seed=42)
+        env._queue_sizes[2] = 1  # noqa: SLF001
+
+        _, reward, _, _, info = env.step(0)
+
+        assert reward == 1.0
+        assert info["total_cost"] == 0.0

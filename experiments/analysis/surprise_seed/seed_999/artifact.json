@@ -1,0 +1,778 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Generalização na seed surpresa 999",
+    "generatedAt": "2026-07-19T14:21:36.590270+00:00",
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "layout": "full",
+        "body": "# Generalização dos agentes na seed surpresa 999"
+      },
+      {
+        "id": "technical_summary",
+        "type": "markdown",
+        "layout": "full",
+        "sourceId": "config-summary",
+        "body": "## Resultado técnico em uma nova coorte de ambiente\n\nTodos os **15 checkpoints** das Configs A, B, C foram avaliados em **100 episódios** derivados da seed mestra não vista **999**. A Config **A** obteve o maior reward médio surpresa (-84.2). **0 de 3 configurações** atenderam ao critério de boa generalização (queda de até 5% ou melhora). A maior queda média ocorreu na Config **B** (-21.8 pontos de reward; 16.0% de degradação). Os limites de 5% e 15% seguem a especificação e não são um teste de significância."
+      },
+      {
+        "id": "config_finding",
+        "type": "markdown",
+        "layout": "full",
+        "sourceId": "scenario-comparison",
+        "body": "## A comparação por configuração separa efeito médio e dispersão\n\nAs barras comparam a média dos cinco checkpoints; a banda de erro é o desvio padrão amostral entre as seeds de treinamento dos modelos. Diferenças negativas indicam pior desempenho na coorte surpresa."
+      },
+      {
+        "id": "scenario_chart_block",
+        "type": "chart",
+        "layout": "full",
+        "chartId": "scenario_chart"
+      },
+      {
+        "id": "config_table_block",
+        "type": "table",
+        "layout": "full",
+        "tableId": "config_summary_table"
+      },
+      {
+        "id": "model_finding",
+        "type": "markdown",
+        "layout": "full",
+        "sourceId": "model-comparison",
+        "body": "## A variação entre checkpoints revela a robustez do treinamento\n\nO gráfico mostra o gap de reward para cada modelo individual. A linha zero representa desempenho idêntico à referência; valores à esquerda são quedas. A tabela seguinte mantém os valores exatos para auditoria."
+      },
+      {
+        "id": "model_gap_chart_block",
+        "type": "chart",
+        "layout": "full",
+        "chartId": "model_gap_chart"
+      },
+      {
+        "id": "model_table_block",
+        "type": "table",
+        "layout": "full",
+        "tableId": "model_comparison_table"
+      },
+      {
+        "id": "scope",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Escopo e definições tornam a comparação reproduzível\n\n- **Seed surpresa:** 999, usada como seed mestra para derivar 100 seeds de episódio distintas.\n- **Seeds de treino dos modelos:** 42, 123, 256, 789 e 1024.\n- **Referência:** resultado já calculado para cada checkpoint no bloco de ambiente iniciado pela própria seed de treinamento.\n- **Reward comum:** produtividade, para comparar A, B e C na mesma escala.\n- **Gap:** reward médio surpresa menos reward médio de referência."
+      },
+      {
+        "id": "methodology",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Desenho de avaliação controla a coorte surpresa\n\nA seed mestra inicializa um gerador NumPy que produz seeds de episódio únicas e exclui explicitamente as cinco seeds de treino. Todos os checkpoints recebem exatamente a mesma sequência, e as políticas são executadas deterministicamente. A síntese por configuração calcula média e desvio padrão amostral entre os cinco checkpoints. A conclusão usa a queda relativa sobre o valor absoluto do reward de referência: até 5% é boa, de 5% a 15% é moderada e acima de 15% é severa."
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Uma única seed mestra ainda não prova generalização universal\n\nA avaliação demonstra robustez apenas para uma coorte não vista. A referência histórica usa blocos de ambiente diferentes para cada checkpoint, portanto o gap mistura mudança de coorte e sensibilidade do modelo. Os limites percentuais são regras descritivas e não intervalos de confiança ou testes de significância."
+      },
+      {
+        "id": "next_steps",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Próximos passos para fortalecer a defesa\n\n1. Na apresentação, executar o mesmo comando trocando apenas `--surprise-seed`.\n2. Se houver tempo, repetir com três ou mais seeds mestras não vistas e reportar um intervalo entre coortes.\n3. Investigar checkpoints com gap negativo grande usando as trajetórias da análise qualitativa."
+      },
+      {
+        "id": "questions",
+        "type": "markdown",
+        "layout": "full",
+        "body": "## Questões que permanecem abertas\n\n- A ordenação entre A, B e C se mantém em outras seeds mestras?\n- A queda vem de maior carga, espera acumulada ou decisões sem atendimento?\n- O checkpoint mais robusto também mantém equilíbrio entre as filas?"
+      }
+    ],
+    "cards": [],
+    "charts": [
+      {
+        "id": "scenario_chart",
+        "title": "Reward de referência e na seed surpresa",
+        "subtitle": "Configs A, B, C; média ± DP entre checkpoints; seed mestra surpresa 999",
+        "intent": "comparison",
+        "question": "Como o reward médio de cada configuração muda na seed surpresa?",
+        "rationale": "Barras agrupadas mostram duas condições discretas por configuração com a mesma unidade.",
+        "comparisonContext": {
+          "baseline": "Avaliação iniciada pela seed de treinamento",
+          "unit": "Reward médio por episódio"
+        },
+        "type": "bar",
+        "dataset": "scenario_comparison",
+        "sourceId": "scenario-comparison",
+        "encodings": {
+          "x": {
+            "field": "config",
+            "type": "nominal",
+            "label": "Configuração"
+          },
+          "y": {
+            "field": "mean_reward",
+            "type": "quantitative",
+            "format": "number",
+            "label": "Reward médio por episódio"
+          },
+          "color": {
+            "field": "scenario_label",
+            "type": "nominal",
+            "label": "Cenário"
+          },
+          "tooltip": [
+            {
+              "field": "std_between_models",
+              "type": "quantitative",
+              "format": "number",
+              "label": "DP entre checkpoints"
+            },
+            {
+              "field": "success_rate",
+              "type": "quantitative",
+              "format": "percent",
+              "label": "Taxa de sucesso"
+            }
+          ]
+        },
+        "palette": {
+          "kind": "categorical",
+          "name": "comparison"
+        },
+        "legend": {
+          "position": "bottom",
+          "title": "Cenário"
+        },
+        "labels": {
+          "values": "auto"
+        },
+        "settings": {
+          "groupMode": "grouped",
+          "sort": "none"
+        },
+        "layout": "full"
+      },
+      {
+        "id": "model_gap_chart",
+        "title": "Gap de reward por checkpoint",
+        "subtitle": "Seed surpresa menos referência; valores negativos indicam queda",
+        "intent": "comparison",
+        "question": "Quais checkpoints generalizam melhor ou pior?",
+        "rationale": "Barras horizontais acomodam os rótulos dos checkpoints e facilitam a comparação com zero.",
+        "comparisonContext": {
+          "baseline": "Gap igual a zero",
+          "unit": "Pontos de reward médio por episódio"
+        },
+        "type": "horizontalBar",
+        "dataset": "model_comparison",
+        "sourceId": "model-comparison",
+        "encodings": {
+          "x": {
+            "field": "model_label",
+            "type": "nominal",
+            "label": "Checkpoint"
+          },
+          "y": {
+            "field": "reward_gap",
+            "type": "quantitative",
+            "format": "number",
+            "label": "Gap de reward"
+          },
+          "tooltip": [
+            {
+              "field": "reference_mean_reward",
+              "type": "quantitative",
+              "format": "number",
+              "label": "Reward de referência"
+            },
+            {
+              "field": "surprise_mean_reward",
+              "type": "quantitative",
+              "format": "number",
+              "label": "Reward surpresa"
+            }
+          ]
+        },
+        "palette": {
+          "kind": "diverging",
+          "name": "gap"
+        },
+        "labels": {
+          "values": "auto"
+        },
+        "referenceLines": [
+          {
+            "axis": "x",
+            "value": 0,
+            "label": "Sem mudança",
+            "color": "neutral"
+          }
+        ],
+        "settings": {
+          "orientation": "horizontal",
+          "categoryLabelPolicy": "wrap",
+          "sort": "ascending"
+        },
+        "layout": "full"
+      }
+    ],
+    "tables": [
+      {
+        "id": "config_summary_table",
+        "title": "Resumo de generalização por configuração",
+        "dataset": "config_summary",
+        "sourceId": "config-summary",
+        "columns": [
+          {
+            "field": "config",
+            "label": "Config"
+          },
+          {
+            "field": "n_models",
+            "label": "Modelos",
+            "format": "number"
+          },
+          {
+            "field": "reference_mean_reward",
+            "label": "Reward referência",
+            "format": "number"
+          },
+          {
+            "field": "surprise_mean_reward",
+            "label": "Reward surpresa",
+            "format": "number"
+          },
+          {
+            "field": "reward_gap",
+            "label": "Gap",
+            "format": "number",
+            "movement": true
+          },
+          {
+            "field": "surprise_success_rate",
+            "label": "Sucesso surpresa",
+            "format": "percent"
+          },
+          {
+            "field": "degradation_pct",
+            "label": "Degradação",
+            "format": "percent"
+          },
+          {
+            "field": "generalization_status",
+            "label": "Classificação"
+          }
+        ],
+        "defaultSort": {
+          "field": "config",
+          "direction": "asc"
+        }
+      },
+      {
+        "id": "model_comparison_table",
+        "title": "Comparação por checkpoint",
+        "dataset": "model_comparison",
+        "sourceId": "model-comparison",
+        "columns": [
+          {
+            "field": "config",
+            "label": "Config"
+          },
+          {
+            "field": "model_seed",
+            "label": "Seed modelo",
+            "format": "number"
+          },
+          {
+            "field": "reference_mean_reward",
+            "label": "Referência",
+            "format": "number"
+          },
+          {
+            "field": "surprise_mean_reward",
+            "label": "Surpresa",
+            "format": "number"
+          },
+          {
+            "field": "reward_gap",
+            "label": "Gap",
+            "format": "number",
+            "movement": true
+          },
+          {
+            "field": "surprise_success_rate",
+            "label": "Sucesso surpresa",
+            "format": "percent"
+          }
+        ],
+        "defaultSort": {
+          "field": "reward_gap",
+          "direction": "asc"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "id": "config-summary",
+        "label": "Agregação por configuração das avaliações de referência e surpresa."
+      },
+      {
+        "id": "scenario-comparison",
+        "label": "Reward médio por configuração e cenário de avaliação."
+      },
+      {
+        "id": "model-comparison",
+        "label": "Comparação pareada por checkpoint entre referência e seed surpresa."
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "status": "ready",
+    "generatedAt": "2026-07-19T14:21:36.590270+00:00",
+    "datasets": {
+      "model_comparison": [
+        {
+          "config": "A",
+          "algo": "ppo",
+          "model_seed": 42,
+          "reference_evaluation_seed": 42,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -72.939,
+          "surprise_mean_reward": -81.855,
+          "reward_gap": -8.916000000000011,
+          "reference_success_rate": 0.917790430526421,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.001983468719909842,
+          "reference_service_rate": 0.917790430526421,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.001983468719909842,
+          "model_label": "Config A / seed 42"
+        },
+        {
+          "config": "A",
+          "algo": "ppo",
+          "model_seed": 123,
+          "reference_evaluation_seed": 123,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -68.95700000000001,
+          "surprise_mean_reward": -75.70400000000001,
+          "reward_gap": -6.747,
+          "reference_success_rate": 0.9184809623222985,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.0012929369240323174,
+          "reference_service_rate": 0.9184809623222985,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.0012929369240323174,
+          "model_label": "Config A / seed 123"
+        },
+        {
+          "config": "A",
+          "algo": "ppo",
+          "model_seed": 256,
+          "reference_evaluation_seed": 256,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -94.99400000000001,
+          "surprise_mean_reward": -88.74899999999998,
+          "reward_gap": 6.245000000000033,
+          "reference_success_rate": 0.9126407012650662,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.00713319798126455,
+          "reference_service_rate": 0.9126407012650662,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.00713319798126455,
+          "model_label": "Config A / seed 256"
+        },
+        {
+          "config": "A",
+          "algo": "ppo",
+          "model_seed": 789,
+          "reference_evaluation_seed": 789,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -69.244,
+          "surprise_mean_reward": -92.71300000000002,
+          "reward_gap": -23.469000000000023,
+          "reference_success_rate": 0.9177791262135923,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.0019947730327385393,
+          "reference_service_rate": 0.9177791262135923,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.0019947730327385393,
+          "model_label": "Config A / seed 789"
+        },
+        {
+          "config": "A",
+          "algo": "ppo",
+          "model_seed": 1024,
+          "reference_evaluation_seed": 1024,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -87.21500000000002,
+          "surprise_mean_reward": -81.813,
+          "reward_gap": 5.402000000000015,
+          "reference_success_rate": 0.9211480362537764,
+          "surprise_success_rate": 0.9191788972629908,
+          "success_rate_gap": -0.001969138990785546,
+          "reference_service_rate": 0.9211480362537764,
+          "surprise_service_rate": 0.9191788972629908,
+          "service_rate_gap": -0.001969138990785546,
+          "model_label": "Config A / seed 1024"
+        },
+        {
+          "config": "B",
+          "algo": "ppo",
+          "model_seed": 42,
+          "reference_evaluation_seed": 42,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -131.15200000000002,
+          "surprise_mean_reward": -158.50100000000003,
+          "reward_gap": -27.349000000000018,
+          "reference_success_rate": 0.917790430526421,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.001983468719909842,
+          "reference_service_rate": 0.917790430526421,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.001983468719909842,
+          "model_label": "Config B / seed 42"
+        },
+        {
+          "config": "B",
+          "algo": "ppo",
+          "model_seed": 123,
+          "reference_evaluation_seed": 123,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -148.52200000000002,
+          "surprise_mean_reward": -158.93800000000002,
+          "reward_gap": -10.415999999999997,
+          "reference_success_rate": 0.9184809623222985,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.0012929369240323174,
+          "reference_service_rate": 0.9184809623222985,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.0012929369240323174,
+          "model_label": "Config B / seed 123"
+        },
+        {
+          "config": "B",
+          "algo": "ppo",
+          "model_seed": 256,
+          "reference_evaluation_seed": 256,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -144.61900000000003,
+          "surprise_mean_reward": -154.833,
+          "reward_gap": -10.21399999999997,
+          "reference_success_rate": 0.9126407012650662,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.00713319798126455,
+          "reference_service_rate": 0.9126407012650662,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.00713319798126455,
+          "model_label": "Config B / seed 256"
+        },
+        {
+          "config": "B",
+          "algo": "ppo",
+          "model_seed": 789,
+          "reference_evaluation_seed": 789,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -122.88900000000001,
+          "surprise_mean_reward": -159.11400000000003,
+          "reward_gap": -36.22500000000002,
+          "reference_success_rate": 0.9177791262135923,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.0019947730327385393,
+          "reference_service_rate": 0.9177791262135923,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.0019947730327385393,
+          "model_label": "Config B / seed 789"
+        },
+        {
+          "config": "B",
+          "algo": "ppo",
+          "model_seed": 1024,
+          "reference_evaluation_seed": 1024,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -134.241,
+          "surprise_mean_reward": -159.11400000000003,
+          "reward_gap": -24.87300000000002,
+          "reference_success_rate": 0.9222557905337362,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": -0.002481891287405391,
+          "reference_service_rate": 0.9222557905337362,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": -0.002481891287405391,
+          "model_label": "Config B / seed 1024"
+        },
+        {
+          "config": "C",
+          "algo": "dqn",
+          "model_seed": 42,
+          "reference_evaluation_seed": 42,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -105.27699999999999,
+          "surprise_mean_reward": -122.79400000000001,
+          "reward_gap": -17.517000000000024,
+          "reference_success_rate": 0.917790430526421,
+          "surprise_success_rate": 0.9195755652518842,
+          "success_rate_gap": 0.0017851347254632666,
+          "reference_service_rate": 0.917790430526421,
+          "surprise_service_rate": 0.9195755652518842,
+          "service_rate_gap": 0.0017851347254632666,
+          "model_label": "Config C / seed 42"
+        },
+        {
+          "config": "C",
+          "algo": "dqn",
+          "model_seed": 123,
+          "reference_evaluation_seed": 123,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -130.826,
+          "surprise_mean_reward": -138.696,
+          "reward_gap": -7.8700000000000045,
+          "reference_success_rate": 0.8904463664380157,
+          "surprise_success_rate": 0.8877429591431971,
+          "success_rate_gap": -0.0027034072948185495,
+          "reference_service_rate": 0.8904463664380157,
+          "surprise_service_rate": 0.8877429591431971,
+          "service_rate_gap": -0.0027034072948185495,
+          "model_label": "Config C / seed 123"
+        },
+        {
+          "config": "C",
+          "algo": "dqn",
+          "model_seed": 256,
+          "reference_evaluation_seed": 256,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -116.82800000000003,
+          "surprise_mean_reward": -119.15400000000001,
+          "reward_gap": -2.325999999999979,
+          "reference_success_rate": 0.9126407012650662,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.00713319798126455,
+          "reference_service_rate": 0.9126407012650662,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.00713319798126455,
+          "model_label": "Config C / seed 256"
+        },
+        {
+          "config": "C",
+          "algo": "dqn",
+          "model_seed": 789,
+          "reference_evaluation_seed": 789,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -87.40599999999999,
+          "surprise_mean_reward": -119.33300000000003,
+          "reward_gap": -31.927000000000035,
+          "reference_success_rate": 0.9177791262135923,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": 0.0019947730327385393,
+          "reference_service_rate": 0.9177791262135923,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": 0.0019947730327385393,
+          "model_label": "Config C / seed 789"
+        },
+        {
+          "config": "C",
+          "algo": "dqn",
+          "model_seed": 1024,
+          "reference_evaluation_seed": 1024,
+          "surprise_master_seed": 999,
+          "reference_episodes": 100,
+          "surprise_episodes": 100,
+          "reference_mean_reward": -122.928,
+          "surprise_mean_reward": -136.284,
+          "reward_gap": -13.355999999999995,
+          "reference_success_rate": 0.9222557905337362,
+          "surprise_success_rate": 0.9197738992463308,
+          "success_rate_gap": -0.002481891287405391,
+          "reference_service_rate": 0.9222557905337362,
+          "surprise_service_rate": 0.9197738992463308,
+          "service_rate_gap": -0.002481891287405391,
+          "model_label": "Config C / seed 1024"
+        }
+      ],
+      "config_summary": [
+        {
+          "config": "A",
+          "n_models": 5,
+          "reference_mean_reward": -78.66980000000001,
+          "reference_std_between_models": 11.784801725103403,
+          "surprise_mean_reward": -84.1668,
+          "surprise_std_between_models": 6.643377695118652,
+          "reward_gap": -5.496999999999997,
+          "reference_success_rate": 0.9175678513162309,
+          "surprise_success_rate": 0.9196548988496629,
+          "success_rate_gap": 0.0020870475334319404,
+          "reference_service_rate": 0.9175678513162309,
+          "surprise_service_rate": 0.9196548988496629,
+          "service_rate_gap": 0.0020870475334319404,
+          "degradation_pct": 0.06987433551375492,
+          "generalization_status": "Generalização moderada (queda de 5% a 15%)"
+        },
+        {
+          "config": "B",
+          "n_models": 5,
+          "reference_mean_reward": -136.2846,
+          "reference_std_between_models": 10.358307839603924,
+          "surprise_mean_reward": -158.10000000000002,
+          "surprise_std_between_models": 1.8434157154586834,
+          "reward_gap": -21.815400000000004,
+          "reference_success_rate": 0.9177894021722228,
+          "surprise_success_rate": 0.9197738992463307,
+          "success_rate_gap": 0.0019844970741079715,
+          "reference_service_rate": 0.9177894021722228,
+          "surprise_service_rate": 0.9197738992463307,
+          "service_rate_gap": 0.0019844970741079715,
+          "degradation_pct": 0.16007237795026,
+          "generalization_status": "Degradação severa (queda acima de 15%)"
+        },
+        {
+          "config": "C",
+          "n_models": 5,
+          "reference_mean_reward": -112.65299999999999,
+          "reference_std_between_models": 16.919519526274975,
+          "surprise_mean_reward": -127.25220000000002,
+          "surprise_std_between_models": 9.496105633363594,
+          "reward_gap": -14.599200000000007,
+          "reference_success_rate": 0.9121824829953663,
+          "surprise_success_rate": 0.9133280444268147,
+          "success_rate_gap": 0.001145561431448483,
+          "reference_service_rate": 0.9121824829953663,
+          "surprise_service_rate": 0.9133280444268147,
+          "service_rate_gap": 0.001145561431448483,
+          "degradation_pct": 0.12959441825783607,
+          "generalization_status": "Generalização moderada (queda de 5% a 15%)"
+        }
+      ],
+      "scenario_comparison": [
+        {
+          "config": "A",
+          "scenario_label": "Seeds de treino (referência)",
+          "mean_reward": -78.66980000000001,
+          "std_between_models": 11.784801725103403,
+          "n_models": 5,
+          "success_rate": 0.9175678513162309,
+          "service_rate": 0.9175678513162309
+        },
+        {
+          "config": "A",
+          "scenario_label": "Seed surpresa",
+          "mean_reward": -84.1668,
+          "std_between_models": 6.643377695118652,
+          "n_models": 5,
+          "success_rate": 0.9196548988496629,
+          "service_rate": 0.9196548988496629
+        },
+        {
+          "config": "B",
+          "scenario_label": "Seeds de treino (referência)",
+          "mean_reward": -136.2846,
+          "std_between_models": 10.358307839603924,
+          "n_models": 5,
+          "success_rate": 0.9177894021722228,
+          "service_rate": 0.9177894021722228
+        },
+        {
+          "config": "B",
+          "scenario_label": "Seed surpresa",
+          "mean_reward": -158.10000000000002,
+          "std_between_models": 1.8434157154586834,
+          "n_models": 5,
+          "success_rate": 0.9197738992463307,
+          "service_rate": 0.9197738992463307
+        },
+        {
+          "config": "C",
+          "scenario_label": "Seeds de treino (referência)",
+          "mean_reward": -112.65299999999999,
+          "std_between_models": 16.919519526274975,
+          "n_models": 5,
+          "success_rate": 0.9121824829953663,
+          "service_rate": 0.9121824829953663
+        },
+        {
+          "config": "C",
+          "scenario_label": "Seed surpresa",
+          "mean_reward": -127.25220000000002,
+          "std_between_models": 9.496105633363594,
+          "n_models": 5,
+          "success_rate": 0.9133280444268147,
+          "service_rate": 0.9133280444268147
+        }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": [
+    {
+      "id": "config-summary",
+      "label": "Agregação por configuração das avaliações de referência e surpresa.",
+      "query": {
+        "engine": "sqlite",
+        "id": "config-summary",
+        "language": "sql",
+        "sql": "WITH paired AS (\n    SELECT\n        surprise.config,\n        surprise.mean_reward AS surprise_reward,\n        reference.mean_reward AS reference_reward,\n        surprise.mean_reward - reference.mean_reward AS reward_gap,\n        surprise.success_rate AS surprise_success_rate,\n        reference.success_rate AS reference_success_rate,\n        surprise.service_rate AS surprise_service_rate,\n        reference.service_rate AS reference_service_rate\n    FROM evaluations AS surprise\n    JOIN evaluations AS reference\n      ON reference.config = surprise.config\n     AND reference.model_seed = surprise.model_seed\n    WHERE surprise.scenario = 'surprise'\n      AND reference.scenario = 'reference'\n)\nSELECT\n    config,\n    COUNT(*) AS n_models,\n    AVG(reference_reward) AS reference_mean_reward,\n    sample_std(reference_reward) AS reference_std_between_models,\n    AVG(surprise_reward) AS surprise_mean_reward,\n    sample_std(surprise_reward) AS surprise_std_between_models,\n    AVG(reward_gap) AS reward_gap,\n    AVG(reference_success_rate) AS reference_success_rate,\n    AVG(surprise_success_rate) AS surprise_success_rate,\n    AVG(surprise_success_rate - reference_success_rate) AS success_rate_gap,\n    AVG(reference_service_rate) AS reference_service_rate,\n    AVG(surprise_service_rate) AS surprise_service_rate,\n    AVG(surprise_service_rate - reference_service_rate) AS service_rate_gap,\n    AVG(reference_reward - surprise_reward) / ABS(AVG(reference_reward))\n        AS degradation_pct,\n    CASE\n      WHEN AVG(surprise_reward) >= AVG(reference_reward)\n        THEN 'Boa generalização (sem queda)'\n      WHEN ABS(AVG(reference_reward)) < 0.000000001\n        THEN 'Inconclusivo (referência próxima de zero)'\n      WHEN (AVG(reference_reward) - AVG(surprise_reward))\n           / ABS(AVG(reference_reward)) <= 0.05\n        THEN 'Boa generalização (queda até 5%)'\n      WHEN (AVG(reference_reward) - AVG(surprise_reward))\n           / ABS(AVG(reference_reward)) <= 0.15\n        THEN 'Generalização moderada (queda de 5% a 15%)'\n      ELSE 'Degradação severa (queda acima de 15%)'\n    END AS generalization_status\nFROM paired\nGROUP BY config\nORDER BY config",
+        "description": "Agregação por configuração das avaliações de referência e surpresa.",
+        "tables_used": [
+          "evaluations"
+        ]
+      }
+    },
+    {
+      "id": "scenario-comparison",
+      "label": "Reward médio por configuração e cenário de avaliação.",
+      "query": {
+        "engine": "sqlite",
+        "id": "scenario-comparison",
+        "language": "sql",
+        "sql": "SELECT\n    config,\n    CASE scenario\n      WHEN 'reference' THEN 'Seeds de treino (referência)'\n      ELSE 'Seed surpresa'\n    END AS scenario_label,\n    AVG(mean_reward) AS mean_reward,\n    sample_std(mean_reward) AS std_between_models,\n    COUNT(*) AS n_models,\n    AVG(success_rate) AS success_rate,\n    AVG(service_rate) AS service_rate\nFROM evaluations\nGROUP BY config, scenario\nORDER BY config, CASE scenario WHEN 'reference' THEN 0 ELSE 1 END",
+        "description": "Reward médio por configuração e cenário de avaliação.",
+        "tables_used": [
+          "evaluations"
+        ]
+      }
+    },
+    {
+      "id": "model-comparison",
+      "label": "Comparação pareada por checkpoint entre referência e seed surpresa.",
+      "query": {
+        "engine": "sqlite",
+        "id": "model-comparison",
+        "language": "sql",
+        "sql": "SELECT\n    surprise.config,\n    surprise.algo,\n    surprise.model_seed,\n    reference.evaluation_seed AS reference_evaluation_seed,\n    surprise.evaluation_seed AS surprise_master_seed,\n    reference.episodes AS reference_episodes,\n    surprise.episodes AS surprise_episodes,\n    reference.mean_reward AS reference_mean_reward,\n    surprise.mean_reward AS surprise_mean_reward,\n    surprise.mean_reward - reference.mean_reward AS reward_gap,\n    reference.success_rate AS reference_success_rate,\n    surprise.success_rate AS surprise_success_rate,\n    surprise.success_rate - reference.success_rate AS success_rate_gap,\n    reference.service_rate AS reference_service_rate,\n    surprise.service_rate AS surprise_service_rate,\n    surprise.service_rate - reference.service_rate AS service_rate_gap,\n    'Config ' || surprise.config || ' / seed ' || surprise.model_seed AS model_label\nFROM evaluations AS surprise\nJOIN evaluations AS reference\n  ON reference.config = surprise.config\n AND reference.model_seed = surprise.model_seed\nWHERE surprise.scenario = 'surprise'\n  AND reference.scenario = 'reference'\nORDER BY surprise.config, surprise.model_seed",
+        "description": "Comparação pareada por checkpoint entre referência e seed surpresa.",
+        "tables_used": [
+          "evaluations"
+        ]
+      }
+    }
+  ]
+}

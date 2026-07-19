@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# run_pipeline.sh — Pipeline completo: treino + baselines
+# run_pipeline.sh — Pipeline completo: treino + avaliações + análises
 # ============================================================
 # Uso: bash run_pipeline.sh
 # ============================================================
@@ -8,6 +8,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
+export PYTHONUTF8=1
 
 echo "🐢 Pipeline COMPLETO — 200k steps, 100 episódios, 5 seeds"
 echo "Início: $(date)"
@@ -34,13 +35,12 @@ echo "  3/3 — Config C: DQN + produtividade"
 echo "═══════════════════════════════════════════════"
 uv run python -m src.agents.train --config C
 
-# ─── 4. Baselines ───────────────────────────────────────────
+# ─── 4. Avaliações e análises ───────────────────────────────
 echo ""
 echo "═══════════════════════════════════════════════"
-echo "  4/4 — Avaliando baselines"
+echo "  4/4 — Avaliações, gráficos, tabelas e relatórios"
 echo "═══════════════════════════════════════════════"
-rm -rf experiments/baselines/
-uv run python -m src.baselines.run
+bash run_analysis.sh 999
 
 # ─── Resumo final ──────────────────────────────────────────
 echo ""
@@ -54,5 +54,5 @@ echo "Modelos treinados:"
 find models -name "model.zip" | sort
 
 echo ""
-echo "Resultados das baselines:"
-cat experiments/baselines/baselines_results.csv
+echo "Tabela-resumo final:"
+cat experiments/analysis/summary/summary_table.md
