@@ -1,0 +1,66 @@
+# Configurações de fim de linha para colaboração cross‑plataforma
+# Pessoas com Windows e Linux no time — sem mais BO de CRLF
+
+* text=auto
+
+# Código fonte — LF sempre (norma do ecossistema Python/POSIX)
+*.py    text eol=lf
+*.pyx   text eol=lf
+*.pxd   text eol=lf
+*.c     text eol=lf
+*.h     text eol=lf
+*.rs    text eol=lf
+*.go    text eol=lf
+
+# Markdown / documentação — LF
+*.md    text eol=lf
+*.rst   text eol=lf
+*.tex   text eol=lf
+*.txt   text eol=lf
+
+# Config — LF
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.toml  text eol=lf
+*.ini   text eol=lf
+*.cfg   text eol=lf
+*.conf  text eol=lf
+
+# Shell scripts — LF (obrigatório)
+*.sh    text eol=lf
+*.bash  text eol=lf
+*.zsh   text eol=lf
+
+# Batch / PowerShell — CRLF (Windows)
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Artefatos binários — não converter
+*.zip   binary
+*.npz   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.svg   binary
+*.pdf   binary
+*.docx  binary
+*.xlsx  binary
+*.pptx  binary
+*.woff  binary
+*.woff2 binary
+*.eot   binary
+*.ttf   binary
+
+# Lock file — preservar
+uv.lock         text eol=lf
+poetry.lock     text eol=lf
+Cargo.lock      text eol=lf
+
+# Git
+.gitignore      text eol=lf
+.gitattributes  text eol=lf
+.gitkeep        text eol=lf
