@@ -29,10 +29,10 @@ O agente precisa aprender a equilibrar **produtividade × prioridade × justiça
 
 | Membro | Papel |
 |---|---|
-| *A definir* | — |
-| *A definir* | — |
-| *A definir* | — |
-| *A definir* | — |
+| Rafael Santos | Desenvolvimento |
+| — | — |
+| — | — |
+| — | — |
 
 ---
 
@@ -73,20 +73,29 @@ TriagemAdaptativaDeAtendimentos/
 │   │   ├── __init__.py                #   Registra "TriagemAdaptativa-v0"
 │   │   └── triagem_env.py            #   Implementação do ambiente
 │   ├── agents/                        # Algoritmos de treinamento
-│   │   └── train.py                   #   Script de treino (PPO/DQN)
-│   ├── baselines/                     # Baseline(s) para comparação
-│   │   └── (em desenvolvimento)
+│   │   ├── train.py                   #   Script de treino (PPO/DQN)
+│   │   └── eval.py                    #   Avaliação de agentes treinados
+│   ├── baselines/                     # Baselines para comparação
+│   │   ├── random.py                  #   Ações uniformemente aleatórias
+│   │   ├── fixed_priority.py          #   Sempre atende fila de maior prioridade
+│   │   ├── longest_queue.py           #   Sempre atende fila com mais chamados
+│   │   └── run.py                     #   Avaliação de todas as baselines
 │   ├── analysis/                      # Análise experimental
 │   │   └── (em desenvolvimento)
 │   └── utils/                         # Utilitários
 │       └── (em desenvolvimento)
 ├── tests/                             # Testes automatizados
 │   ├── conftest.py                    #   Fixtures compartilhadas
-│   └── test_environment.py            #   58 testes do ambiente
+│   ├── test_environment.py            #   Testes do ambiente
+│   ├── test_baselines.py              #   Testes das baselines
+│   └── test_info_counters.py          #   Testes dos contadores do info dict
 ├── models/                            # Modelos treinados (.zip)
 │   └── config_{label}/seed_{NNN}/
 ├── experiments/                       # Resultados e logs
-│   └── config_{label}/seed_{NNN}/
+│   ├── config_{label}/seed_{NNN}/     #   Logs de treino
+│   ├── baselines/                     #   Resultados das baselines
+│   └── results/                       #   Resultados da avaliação de agentes
+├── run_pipeline.sh                    # Pipeline completo (treino + avaliação)
 ├── AGENTS.md                          # Hiperparâmetros e configurações
 ├── README.md
 ├── requirements.txt
@@ -176,11 +185,41 @@ uv run ruff format .
 uv run ruff check . && uv run ruff format --check . && uv run pytest tests/ -q
 ```
 
+### Avaliar baselines
+
+```bash
+# Avaliar todas as baselines (100 episódios × 5 seeds = 1500 episódios)
+uv run python -m src.baselines.run
+
+# Teste rápido (10 episódios)
+uv run python -m src.baselines.run --episodes 10
+```
+
+### Avaliar agentes treinados
+
+```bash
+# Avaliar todas as configs (100 episódios × 5 seeds × 3 configs = 1500 episódios)
+uv run python -m src.agents.eval
+
+# Teste rápido
+uv run python -m src.agents.eval --episodes 10
+
+# Apenas uma config
+uv run python -m src.agents.eval --config A
+```
+
+### Pipeline completo
+
+```bash
+# Treina todas as configs (A, B, C) + avalia baselines
+bash run_pipeline.sh
+```
+
 ### Visualizar o ambiente
 
 ```bash
 # Usando gymnasium.make (registrado)
-python -c "
+uv run python -c "
 import gymnasium as gym
 import src.environment  # noqa: F401
 env = gym.make('TriagemAdaptativa-v0', render_mode='human')
@@ -190,7 +229,7 @@ for _ in range(5):
 "
 
 # Modo ANSI (saída textual)
-python -c "
+uv run python -c "
 import gymnasium as gym
 import src.environment
 env = gym.make('TriagemAdaptativa-v0', render_mode='ansi')
@@ -226,8 +265,10 @@ print(env.render())
 
 - **5 sementes**: 42, 123, 256, 789, 1024
 - **200.000 timesteps** por seed
-- **Avaliação** a cada 10.000 passos (100 episódios)
-- Diretórios: `models/config_{label}/seed_{NNN}/` e `experiments/config_{label}/seed_{NNN}/`
+- **Avaliação** a cada 10.000 passos (10 episódios durante treino, 100 episódios na avaliação final)
+- **3 configurações**: A (PPO + produtividade), B (PPO + prioridade), C (DQN + produtividade)
+- **3 baselines**: aleatório, prioridade fixa, fila mais longa (100 episódios × 5 seeds cada)
+- Diretórios: `models/config_{label}/seed_{NNN}/`, `experiments/config_{label}/seed_{NNN}/`, `experiments/baselines/`
 
 > Detalhes completos em [`AGENTS.md`](AGENTS.md) e [`.specs/05-experimental-protocol.md`](.specs/05-experimental-protocol.md)
 
@@ -238,8 +279,9 @@ print(env.render())
 | Épico | Status | Descrição |
 |---|---|---|
 | **EPIC 0** — Especificações | ✅ Concluído | Definição do problema, MDP, ambiente, agente, protocolo |
-| **EPIC 1** — Ambiente | ✅ Concluído | TriagemEnv com 58 testes, gymnasium-registrado, edge cases |
-| **EPIC 2** — Treinamento | 🔄 Em andamento | Script de treino PPO/DQN |
+| **EPIC 1** — Ambiente | ✅ Concluído | TriagemEnv com 83 testes, gymnasium-registrado, edge cases |
+| **EPIC 2** — Treinamento | ✅ Concluído | Treino PPO/DQN, baselines (aleatório, prioridade fixa, fila mais longa), avaliação de agentes |
+| **EPIC 3** — Análise | 📋 Planejado | Curvas de aprendizado, seed surpresa, gráficos comparativos |
 
 ---
 

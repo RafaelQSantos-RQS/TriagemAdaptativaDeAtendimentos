@@ -116,6 +116,8 @@ class TriagemEnv(gym.Env):
         self._used_capacity: int = 0
         self._step: int = 0
         self._overload_counter: int = 0
+        self._total_arrivals: int = 0
+        self._total_served: int = 0
         self._rng: np.random.Generator | None = None
 
     def reset(
@@ -151,6 +153,8 @@ class TriagemEnv(gym.Env):
         self._used_capacity = 0
         self._step = 0
         self._overload_counter = 0
+        self._total_arrivals = 0
+        self._total_served = 0
 
         return self._get_obs(), self._get_info()
 
@@ -276,6 +280,8 @@ class TriagemEnv(gym.Env):
             "avg_wait_times": self._avg_wait_times.copy(),
             "used_capacity": self._used_capacity,
             "step": self._step,
+            "total_arrivals": self._total_arrivals,
+            "total_served": self._total_served,
         }
 
     def _process_action(self, action: int, queues_served: np.ndarray) -> float:
@@ -313,6 +319,7 @@ class TriagemEnv(gym.Env):
             queue_idx = action - 2
             if queue_idx < n and self._queue_sizes[queue_idx] > 0:
                 self._queue_sizes[queue_idx] -= 1
+                self._total_served += 1
                 r -= cfg.penalty_referral
             else:
                 r -= 0.3
@@ -331,6 +338,7 @@ class TriagemEnv(gym.Env):
             if self._rng is None:
                 continue
             arrival = self._rng.poisson(cfg.arrival_rates[i])
+            self._total_arrivals += arrival
             for _ in range(arrival):
                 if self._queue_sizes[i] < cfg.max_queue_size:
                     self._queue_sizes[i] += 1
@@ -361,6 +369,7 @@ class TriagemEnv(gym.Env):
             key=lambda i: (cfg.priority_weights[i], self._queue_sizes[i]),
         )
         self._queue_sizes[best] -= 1
+        self._total_served += 1
         return best
 
     def _serve_longest_queue(self) -> int | None:
@@ -377,6 +386,7 @@ class TriagemEnv(gym.Env):
             return None
         best = max(candidates, key=lambda i: self._queue_sizes[i])
         self._queue_sizes[best] -= 1
+        self._total_served += 1
         return best
 
     def _compute_reward(self, queues_served: np.ndarray) -> float:
