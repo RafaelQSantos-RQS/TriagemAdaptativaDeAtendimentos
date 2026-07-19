@@ -1,0 +1,19 @@
+method,group,queue,priority,mean_resolved_per_episode,std_between_seeds,n_seeds
+Config A,agent,0,1,26.318000,0.668184,5
+Config A,agent,1,2,46.248000,0.792414,5
+Config A,agent,2,3,19.056000,0.428346,5
+Config B,agent,0,1,23.654000,0.403026,5
+Config B,agent,1,2,48.502000,0.578593,5
+Config B,agent,2,3,19.488000,0.518141,5
+Config C,agent,0,1,23.814000,1.720358,5
+Config C,agent,1,2,48.000000,0.993982,5
+Config C,agent,2,3,19.266000,0.451697,5
+Aleatório,baseline,0,1,26.942000,0.316970,5
+Aleatório,baseline,1,2,43.888000,0.519009,5
+Aleatório,baseline,2,3,17.952000,0.394043,5
+Prioridade Fixa,baseline,0,1,23.654000,0.403026,5
+Prioridade Fixa,baseline,1,2,48.502000,0.578593,5
+Prioridade Fixa,baseline,2,3,19.488000,0.518141,5
+Fila Longa,baseline,0,1,27.946000,0.331858,5
+Fila Longa,baseline,1,2,46.752000,0.633301,5
+Fila Longa,baseline,2,3,16.946000,0.563054,5

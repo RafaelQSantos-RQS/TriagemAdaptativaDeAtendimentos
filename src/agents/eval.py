@@ -22,6 +22,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from collections.abc import Sequence
 from typing import Any
 
 import gymnasium as gym
@@ -87,6 +88,7 @@ def evaluate_agent(
     seed: int,
     config: TriagemConfig | None = None,
     deterministic: bool = True,
+    episode_seeds: Sequence[int] | None = None,
 ) -> dict[str, float]:
     """Avalia um agente por N episódios e retorna métricas agregadas.
 
@@ -97,21 +99,31 @@ def evaluate_agent(
         config: Configuração do ambiente (usa default se None).
         deterministic: Se True, usa ação determinística (avaliação).
                       Se False, amostra da distribuição (exploração).
+        episode_seeds: Seeds explícitas para cada episódio. Quando informado,
+            deve conter exatamente ``episodes`` valores e substitui ``seed + ep``.
 
     Returns:
         Dicionário com métricas: mean_reward, std_reward, success_rate,
         mean_steps, min_reward, max_reward, total_served, total_arrivals.
     """
     cfg = config or TriagemConfig()
+    if episode_seeds is not None and len(episode_seeds) != episodes:
+        raise ValueError(
+            "episode_seeds deve conter exatamente uma seed por episódio: "
+            f"esperado {episodes}, recebido {len(episode_seeds)}"
+        )
 
     rewards: list[float] = []
     steps_list: list[int] = []
     total_served = 0
     total_arrivals = 0
+    costs: list[float] = []
+    served_by_queue = np.zeros(NUM_QUEUES, dtype=np.int64)
 
     env = gym.make("TriagemAdaptativa-v0", config=cfg)
     for ep in range(episodes):
-        obs, _info = env.reset(seed=seed + ep)
+        env_seed = episode_seeds[ep] if episode_seeds is not None else seed + ep
+        obs, _info = env.reset(seed=int(env_seed))
 
         terminated = False
         truncated = False
@@ -128,6 +140,8 @@ def evaluate_agent(
         steps_list.append(ep_steps)
         total_served += int(info.get("total_served", 0))
         total_arrivals += int(info.get("total_arrivals", 0))
+        costs.append(float(info.get("total_cost", 0.0)))
+        served_by_queue += np.asarray(info.get("served_by_queue", 0), dtype=np.int64)
 
     env.close()
 
@@ -137,11 +151,20 @@ def evaluate_agent(
         "std_reward": float(rewards_arr.std()),
         "min_reward": float(rewards_arr.min()),
         "max_reward": float(rewards_arr.max()),
-        "success_rate": float(np.mean(rewards_arr >= 0)),
+        "success_rate": (
+            float(total_served / total_arrivals) if total_arrivals else 0.0
+        ),
+        "nonnegative_reward_rate": float(np.mean(rewards_arr >= 0)),
         "mean_steps": float(np.mean(steps_list)),
         "std_steps": float(np.std(steps_list)),
+        "mean_cost": float(np.mean(costs)),
+        "std_cost": float(np.std(costs)),
         "total_served": int(total_served),
         "total_arrivals": int(total_arrivals),
+        **{
+            f"mean_served_queue_{queue}": float(served_by_queue[queue] / episodes)
+            for queue in range(NUM_QUEUES)
+        },
     }
 
 
@@ -172,10 +195,16 @@ def save_results(
         "min_reward",
         "max_reward",
         "success_rate",
+        "nonnegative_reward_rate",
         "mean_steps",
         "std_steps",
+        "mean_cost",
+        "std_cost",
         "total_served",
         "total_arrivals",
+        "mean_served_queue_0",
+        "mean_served_queue_1",
+        "mean_served_queue_2",
     ]
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -274,6 +303,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="experiments/results",
         help="Diretório de saída (default: experiments/results)",
     )
+    parser.add_argument(
+        "--evaluation-reward",
+        type=str,
+        choices=["produtividade", "prioridade"],
+        default=None,
+        help=(
+            "Função de recompensa comum para avaliar todos os agentes "
+            "(default: função usada no treino de cada config)"
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -291,9 +330,11 @@ def main(argv: list[str] | None = None) -> None:
 
     for config_name in configs:
         algo_name = CONFIG_MAP[config_name]["algo"]
-        reward_config = CONFIG_MAP[config_name]["reward_config"]
+        training_reward_config = CONFIG_MAP[config_name]["reward_config"]
+        reward_config = args.evaluation_reward or training_reward_config
         print(
-            f"\n  → Avaliando Config {config_name} ({algo_name.upper()}, {reward_config})"
+            f"\n  → Avaliando Config {config_name} "
+            f"({algo_name.upper()}, reward de avaliação: {reward_config})"
         )
 
         for seed in seeds:

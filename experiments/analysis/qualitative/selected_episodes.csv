@@ -1,0 +1,7 @@
+episode_index,env_seed,selection,outcome,reward,steps,termination_reason,total_served,total_arrivals,service_rate,no_service_ratio,dominant_action,served_queue_0,final_queue_0,max_wait_queue_0,served_queue_1,final_queue_1,max_wait_queue_1,served_queue_2,final_queue_2,max_wait_queue_2
+25,10025,Top sucesso,Sucesso,58.80000000000001,100,Horizonte máximo,83,85,0.9764705882352941,0.17,Atender maior prioridade (98%),28,0,14.0,39,1,6.0,16,1,2.0
+37,10037,Top sucesso,Sucesso,52.99999999999999,100,Horizonte máximo,85,87,0.9770114942528736,0.15,Atender maior prioridade (96%),29,0,18.0,37,2,11.0,19,0,2.0
+2,10002,Top sucesso,Sucesso,49.39999999999999,100,Horizonte máximo,83,89,0.9325842696629213,0.17,Atender maior prioridade (97%),29,4,22.0,43,1,8.0,11,1,2.0
+73,10073,Pior falha,Falha,-479.09999999999997,100,Horizonte máximo,99,121,0.8181818181818182,0.01,Atender maior prioridade (65%),36,1,79.0,44,13,58.0,19,8,26.0
+69,10069,Pior falha,Falha,-411.2,100,Horizonte máximo,99,132,0.75,0.01,Atender maior prioridade (70%),31,11,71.0,51,16,64.0,17,6,18.0
+55,10055,Pior falha,Falha,-405.2,100,Horizonte máximo,97,124,0.782258064516129,0.03,Atender maior prioridade (87%),14,16,63.0,52,11,76.0,31,0,8.0

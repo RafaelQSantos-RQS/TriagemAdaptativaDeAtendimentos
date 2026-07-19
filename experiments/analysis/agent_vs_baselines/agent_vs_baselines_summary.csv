@@ -1,0 +1,7 @@
+method,group,mean_reward,std_reward,n_seeds
+Config A,agent,-78.669800,11.784802,5
+Config B,agent,-136.284600,10.358308,5
+Config C,agent,-112.653000,16.919520,5
+Aleatório,baseline,-418.930000,19.268971,5
+Prioridade Fixa,baseline,-137.194800,11.073640,5
+Fila Longa,baseline,-416.307400,36.565777,5
