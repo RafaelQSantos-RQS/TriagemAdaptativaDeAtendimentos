@@ -276,9 +276,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--algo",
         type=str,
-        default="ppo",
+        default=None,
         choices=["ppo", "dqn"],
-        help="Algoritmo RL (default: ppo)",
+        help="Algoritmo RL (default: segue o CONFIG_MAP)",
     )
     parser.add_argument(
         "--config",
@@ -310,13 +310,14 @@ def main(argv: list[str] | None = None) -> None:
     """
     args = parse_args(argv)
     seeds: list[int] = [args.seed] if args.seed is not None else SEEDS
+    algo_name = args.algo or CONFIG_MAP[args.config]["algo"]
 
     for seed in seeds:
-        header = f"  Config {args.config} | {args.algo.upper()} | Seed {seed}  "
+        header = f"  Config {args.config} | {algo_name.upper()} | Seed {seed}  "
         print(f"\n{'=' * len(header)}\n{header}\n{'=' * len(header)}\n")
         train_seed(
             seed=seed,
-            algo_name=args.algo,
+            algo_name=algo_name,
             config_name=args.config,
             total_timesteps=args.total_timesteps,
             render=False,
