@@ -71,8 +71,8 @@ def evaluate_baseline(
     total_served = 0
     total_arrivals = 0
 
+    env = gym.make("TriagemAdaptativa-v0", config=cfg)
     for ep in range(episodes):
-        env = gym.make("TriagemAdaptativa-v0", config=cfg)
         obs, _info = env.reset(seed=seed + ep)
 
         terminated = False
@@ -88,10 +88,10 @@ def evaluate_baseline(
 
         rewards.append(ep_reward)
         steps_list.append(ep_steps)
-        total_served += int(sum(info.get("queue_sizes", np.zeros(NUM_QUEUES))))
-        total_arrivals += ep_steps * sum(cfg.arrival_rates)
+        total_served += int(info.get("total_served", 0))
+        total_arrivals += int(info.get("total_arrivals", 0))
 
-        env.close()
+    env.close()
 
     rewards_arr = np.array(rewards)
     return {
