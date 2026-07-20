@@ -117,9 +117,16 @@ class TriagemEnv(gym.Env):
         self._step: int = 0
         self._overload_counter: int = 0
         self._total_arrivals: int = 0
+        # Compatibilidade: total_served/served_by_queue contam toda saída
+        # provocada pelo agente, seja atendimento local ou encaminhamento.
         self._total_served: int = 0
+        self._total_resolved: int = 0
+        self._total_referred: int = 0
         self._total_cost: float = 0.0
         self._served_by_queue: np.ndarray = np.zeros(n, dtype=np.int64)
+        self._resolved_by_queue: np.ndarray = np.zeros(n, dtype=np.int64)
+        self._referred_by_queue: np.ndarray = np.zeros(n, dtype=np.int64)
+        self._terminated_by_overload: bool = False
         self._rng: np.random.Generator | None = None
 
     def reset(
@@ -157,8 +164,13 @@ class TriagemEnv(gym.Env):
         self._overload_counter = 0
         self._total_arrivals = 0
         self._total_served = 0
+        self._total_resolved = 0
+        self._total_referred = 0
         self._total_cost = 0.0
         self._served_by_queue = np.zeros(n, dtype=np.int64)
+        self._resolved_by_queue = np.zeros(n, dtype=np.int64)
+        self._referred_by_queue = np.zeros(n, dtype=np.int64)
+        self._terminated_by_overload = False
 
         return self._get_obs(), self._get_info()
 
@@ -210,6 +222,7 @@ class TriagemEnv(gym.Env):
             self._overload_counter += 1
             if self._overload_counter >= cfg.overload_patience:
                 terminated = True
+                self._terminated_by_overload = True
         else:
             self._overload_counter = 0
 
@@ -297,8 +310,13 @@ class TriagemEnv(gym.Env):
             "step": self._step,
             "total_arrivals": self._total_arrivals,
             "total_served": self._total_served,
+            "total_resolved": self._total_resolved,
+            "total_referred": self._total_referred,
             "total_cost": self._total_cost,
             "served_by_queue": self._served_by_queue.copy(),
+            "resolved_by_queue": self._resolved_by_queue.copy(),
+            "referred_by_queue": self._referred_by_queue.copy(),
+            "terminated_by_overload": self._terminated_by_overload,
         }
 
     def _process_action(self, action: int, queues_served: np.ndarray) -> float:
@@ -337,7 +355,9 @@ class TriagemEnv(gym.Env):
             if queue_idx < n and self._queue_sizes[queue_idx] > 0:
                 self._queue_sizes[queue_idx] -= 1
                 self._total_served += 1
+                self._total_referred += 1
                 self._served_by_queue[queue_idx] += 1
+                self._referred_by_queue[queue_idx] += 1
                 r -= cfg.penalty_referral
             else:
                 r -= 0.3
@@ -388,7 +408,9 @@ class TriagemEnv(gym.Env):
         )
         self._queue_sizes[best] -= 1
         self._total_served += 1
+        self._total_resolved += 1
         self._served_by_queue[best] += 1
+        self._resolved_by_queue[best] += 1
         return best
 
     def _serve_longest_queue(self) -> int | None:
@@ -406,7 +428,9 @@ class TriagemEnv(gym.Env):
         best = max(candidates, key=lambda i: self._queue_sizes[i])
         self._queue_sizes[best] -= 1
         self._total_served += 1
+        self._total_resolved += 1
         self._served_by_queue[best] += 1
+        self._resolved_by_queue[best] += 1
         return best
 
     def _compute_reward(self, queues_served: np.ndarray) -> float:
