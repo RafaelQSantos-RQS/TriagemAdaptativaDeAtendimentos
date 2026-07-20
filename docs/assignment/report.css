@@ -1,0 +1,188 @@
+@page {
+  size: A4;
+  margin: 2.1cm 1.9cm 2.0cm 1.9cm;
+  @bottom-center {
+    content: counter(page);
+    color: #596273;
+    font-size: 9pt;
+  }
+}
+
+:root {
+  --ink: #172033;
+  --muted: #596273;
+  --accent: #1f5a7a;
+  --accent-soft: #eaf2f6;
+  --rule: #cdd7df;
+}
+
+html {
+  font-family: "Arial", "Liberation Sans", sans-serif;
+  color: var(--ink);
+  font-size: 10.4pt;
+  line-height: 1.48;
+}
+
+body {
+  max-width: none;
+  margin: 0;
+}
+
+#title-block-header {
+  min-height: 21cm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  page-break-after: always;
+}
+
+#title-block-header h1.title {
+  color: var(--accent);
+  font-size: 27pt;
+  line-height: 1.15;
+  margin: 0 0 0.35cm;
+  border: 0;
+}
+
+.subtitle {
+  color: var(--ink);
+  font-size: 18pt;
+  margin: 0 0 1.3cm;
+}
+
+.author {
+  font-size: 11.5pt;
+  margin: 0.12cm 0;
+  text-align: center;
+}
+
+.date {
+  color: var(--muted);
+  margin-top: 1.2cm;
+  text-align: center;
+}
+
+nav#TOC {
+  page-break-after: always;
+}
+
+nav#TOC ul {
+  list-style: none;
+  padding-left: 0.55cm;
+}
+
+nav#TOC > ul {
+  padding-left: 0;
+}
+
+nav#TOC a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+h1, h2, h3 {
+  color: var(--accent);
+  page-break-after: avoid;
+}
+
+h1 {
+  font-size: 18pt;
+  margin-top: 0.4cm;
+  padding-bottom: 0.12cm;
+  border-bottom: 1.5px solid var(--accent);
+}
+
+h2 {
+  font-size: 14pt;
+  margin-top: 0.7cm;
+}
+
+h3 {
+  font-size: 11.5pt;
+  margin-top: 0.55cm;
+}
+
+p {
+  margin: 0.25cm 0;
+  text-align: justify;
+  orphans: 3;
+  widows: 3;
+}
+
+li {
+  margin: 0.1cm 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.45cm 0 0.6cm;
+  font-size: 9.2pt;
+  page-break-inside: avoid;
+}
+
+thead {
+  background: var(--accent);
+  color: white;
+}
+
+th, td {
+  border: 1px solid var(--rule);
+  padding: 0.17cm 0.2cm;
+  vertical-align: top;
+}
+
+tbody tr:nth-child(even) {
+  background: #f5f8fa;
+}
+
+figure {
+  margin: 0.55cm auto 0.75cm;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+figure img {
+  max-width: 100%;
+  max-height: 20.5cm;
+  object-fit: contain;
+}
+
+figcaption {
+  color: var(--muted);
+  font-size: 9pt;
+  line-height: 1.3;
+  margin-top: 0.18cm;
+}
+
+code {
+  font-family: "Consolas", "Liberation Mono", monospace;
+  font-size: 9pt;
+  background: #eef2f5;
+  padding: 0.02cm 0.08cm;
+}
+
+pre {
+  background: #eef2f5;
+  border-left: 3px solid var(--accent);
+  padding: 0.3cm;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+}
+
+.page-break {
+  page-break-after: always;
+}
+
+a {
+  color: #155c82;
+}
+
+blockquote {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  margin: 0.45cm 0;
+  padding: 0.2cm 0.4cm;
+}
