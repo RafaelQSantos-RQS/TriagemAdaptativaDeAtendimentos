@@ -40,7 +40,7 @@ O agente precisa aprender a equilibrar **produtividade × prioridade × justiça
 
 | Tecnologia | Finalidade |
 |---|---|
-| **Python 3.11+** | Linguagem principal |
+| **Python 3.12+** | Linguagem principal |
 | **Gymnasium** | Implementação do ambiente RL |
 | **Stable-Baselines3** | Algoritmos de treinamento (PPO, DQN) |
 | **NumPy** | Processamento de dados experimentais |
@@ -106,7 +106,8 @@ TriagemAdaptativaDeAtendimentos/
 ├── run_pipeline.sh                    # Pipeline completo (treino + avaliação)
 ├── AGENTS.md                          # Hiperparâmetros e configurações
 ├── README.md
-├── requirements.txt
+├── pyproject.toml                     # Dependências e versão do Python
+├── uv.lock                            # Versões reproduzíveis das dependências
 └── LICENSE
 ```
 
@@ -116,8 +117,8 @@ TriagemAdaptativaDeAtendimentos/
 
 ### Pré-requisitos
 
-- Python 3.11 ou superior
-- [uv](https://docs.astral.sh/uv/) (recomendado) ou pip
+- Python 3.12 ou superior
+- [uv](https://docs.astral.sh/uv/)
 
 ### Passos
 
@@ -126,15 +127,8 @@ TriagemAdaptativaDeAtendimentos/
 git clone https://github.com/rafaelqsantos/TriagemAdaptativaDeAtendimentos.git
 cd TriagemAdaptativaDeAtendimentos
 
-# Crie e ative o ambiente virtual (com uv — recomendado)
-uv venv
-source .venv/bin/activate
-
-# Instale o pacote em modo editable (registra o ambiente Gymnasium)
-uv pip install -e .
-
-# Instale dependências adicionais
-uv pip install -r requirements.txt
+# Crie o ambiente e instale as dependências do pyproject.toml
+uv sync
 ```
 
 ### Dependências Opcionais
@@ -369,7 +363,7 @@ A implementação foi conferida contra o
 |---|---|---|
 | Curvas A, B e C com média de 5 seeds e banda de DP | Concluído | 3 gráficos individuais + `learning_curves_comparison.png` |
 | Agentes vs baselines com barras de erro | Concluído | `agent_vs_baselines_reward.png` |
-| Chamados resolvidos por fila | Concluído | `resolved_by_queue.png` + CSV por fila |
+| Saídas registradas por fila | Concluído | `resolved_by_queue.png` + CSV por fila |
 | Três sucessos e três falhas documentados | Concluído | relatório qualitativo + trajetórias passo a passo |
 | Distribuição de ações | Concluído | tabela CSV e gráfico no relatório qualitativo |
 | Seed surpresa nos 15 modelos | Concluído | seed 999, 100 episódios por checkpoint |
@@ -392,6 +386,13 @@ A implementação foi conferida contra o
 - A análise por fila usa três painéis comparáveis, em vez de barras empilhadas.
   Isso evita tratar métodos concorrentes como partes de um mesmo total e mantém
   o desvio padrão visível.
+- Os resultados existentes usam `total_served` como contador de saídas, que soma
+  atendimentos locais e encaminhamentos. O ambiente também expõe
+  `total_resolved` e `total_referred` para novas avaliações.
+- A política escolhe entre duas regras de atendimento prontas, prioridade fixa e
+  fila mais longa, além das ações de encaminhamento.
+- A capacidade nominal é alocada e liberada no mesmo passo. Ela não cria disputa
+  persistente por vagas nas execuções atuais.
 
 ### Visualizar o ambiente
 
@@ -457,9 +458,9 @@ print(env.render())
 | Épico | Status | Descrição |
 |---|---|---|
 | **EPIC 0** — Especificações | ✅ Concluído | Definição do problema, MDP, ambiente, agente, protocolo |
-| **EPIC 1** — Ambiente | ✅ Concluído | TriagemEnv com 83 testes, gymnasium-registrado, edge cases |
+| **EPIC 1** — Ambiente | ✅ Concluído | TriagemEnv registrado no Gymnasium, testes e contadores no `info` |
 | **EPIC 2** — Treinamento | ✅ Concluído | Treino PPO/DQN, baselines (aleatório, prioridade fixa, fila mais longa), avaliação de agentes |
-| **EPIC 3** — Análise | 📋 Planejado | Curvas de aprendizado, seed surpresa, gráficos comparativos |
+| **EPIC 3** — Análise | ✅ Concluído | Curvas, seed surpresa, análise qualitativa, gráficos e tabela-resumo |
 
 ---
 

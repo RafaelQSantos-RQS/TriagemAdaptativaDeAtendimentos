@@ -59,7 +59,7 @@ class TestTotalArrivals:
 
 
 class TestTotalServed:
-    """Contador de chamados atendidos no episódio."""
+    """Contador legado de saídas provocadas pelo agente."""
 
     def test_info_has_total_served(self):
         """info dict contém a chave total_served."""
@@ -85,7 +85,7 @@ class TestTotalServed:
         assert info["total_served"] == 1
 
     def test_total_served_increments_on_referral(self):
-        """Referral bem-sucedido incrementa total_served."""
+        """Encaminhamento mantém a semântica legada de total_served."""
         env = TriagemEnv()
         env.reset(seed=42)
         env._queue_sizes[0] = 3  # noqa: SLF001
@@ -116,6 +116,124 @@ class TestTotalServed:
         for _ in range(3):
             _, _, _, _, info = env.step(0)
         assert info["total_served"] == 3
+
+
+class TestResolvedAndReferred:
+    """Contadores distinguem atendimento local de encaminhamento."""
+
+    def test_counters_start_at_zero(self):
+        env = TriagemEnv()
+
+        _, info = env.reset(seed=42)
+
+        assert info["total_resolved"] == 0
+        assert info["total_referred"] == 0
+        np.testing.assert_array_equal(info["resolved_by_queue"], [0, 0, 0])
+        np.testing.assert_array_equal(info["referred_by_queue"], [0, 0, 0])
+
+    def test_service_increments_only_resolved(self):
+        env = TriagemEnv(TriagemConfig(arrival_rates=(0.0, 0.0, 0.0)))
+        env.reset(seed=42)
+        env._queue_sizes[2] = 1  # noqa: SLF001
+
+        _, _, _, _, info = env.step(0)
+
+        assert info["total_served"] == 1
+        assert info["total_resolved"] == 1
+        assert info["total_referred"] == 0
+        np.testing.assert_array_equal(info["resolved_by_queue"], [0, 0, 1])
+        np.testing.assert_array_equal(info["referred_by_queue"], [0, 0, 0])
+
+    def test_referral_increments_only_referred(self):
+        env = TriagemEnv(TriagemConfig(arrival_rates=(0.0, 0.0, 0.0)))
+        env.reset(seed=42)
+        env._queue_sizes[1] = 1  # noqa: SLF001
+
+        _, _, _, _, info = env.step(3)
+
+        assert info["total_served"] == 1
+        assert info["total_resolved"] == 0
+        assert info["total_referred"] == 1
+        np.testing.assert_array_equal(info["resolved_by_queue"], [0, 0, 0])
+        np.testing.assert_array_equal(info["referred_by_queue"], [0, 1, 0])
+
+    def test_totals_and_per_queue_counters_are_consistent(self):
+        env = TriagemEnv(TriagemConfig(arrival_rates=(0.0, 0.0, 0.0)))
+        env.reset(seed=42)
+        env._queue_sizes[:] = [3, 2, 1]  # noqa: SLF001
+
+        for action in (0, 1, 2, 3):
+            _, _, _, _, info = env.step(action)
+
+        assert info["total_served"] == (
+            info["total_resolved"] + info["total_referred"]
+        )
+        np.testing.assert_array_equal(
+            info["served_by_queue"],
+            info["resolved_by_queue"] + info["referred_by_queue"],
+        )
+
+    def test_counters_reset_between_episodes(self):
+        env = TriagemEnv(TriagemConfig(arrival_rates=(0.0, 0.0, 0.0)))
+        env.reset(seed=42)
+        env._queue_sizes[:] = [1, 0, 1]  # noqa: SLF001
+        env.step(0)
+        env.step(2)
+
+        _, info = env.reset(seed=123)
+
+        assert info["total_resolved"] == 0
+        assert info["total_referred"] == 0
+        np.testing.assert_array_equal(info["resolved_by_queue"], [0, 0, 0])
+        np.testing.assert_array_equal(info["referred_by_queue"], [0, 0, 0])
+
+
+class TestTerminationReason:
+    """Info identifica se a sobrecarga encerrou o episódio."""
+
+    def test_horizon_does_not_mark_overload(self):
+        cfg = TriagemConfig(arrival_rates=(0.0, 0.0, 0.0), max_steps=1)
+        env = TriagemEnv(cfg)
+        env.reset(seed=42)
+
+        _, _, terminated, _, info = env.step(0)
+
+        assert terminated is True
+        assert info["terminated_by_overload"] is False
+
+    def test_overload_marks_termination_reason(self):
+        cfg = TriagemConfig(
+            arrival_rates=(0.0, 0.0, 0.0),
+            max_queue_size=10,
+            max_steps=100,
+            overload_threshold=0.8,
+            overload_patience=1,
+        )
+        env = TriagemEnv(cfg)
+        env.reset(seed=42)
+        env._queue_sizes[:] = [10, 10, 10]  # noqa: SLF001
+
+        _, _, terminated, _, info = env.step(2)
+
+        assert terminated is True
+        assert info["terminated_by_overload"] is True
+
+    def test_reset_clears_termination_reason(self):
+        cfg = TriagemConfig(
+            arrival_rates=(0.0, 0.0, 0.0),
+            max_queue_size=10,
+            overload_threshold=0.8,
+            overload_patience=1,
+        )
+        env = TriagemEnv(cfg)
+        env.reset(seed=42)
+        env._queue_sizes[:] = [10, 10, 10]  # noqa: SLF001
+        _, _, _, _, terminal_info = env.step(2)
+        assert terminal_info["terminated_by_overload"] is True
+
+        _, info = env.reset(seed=123)
+
+        assert info["terminated_by_overload"] is False
 
 
 class TestServedByQueue:

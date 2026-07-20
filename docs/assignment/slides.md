@@ -1,7 +1,7 @@
 ---
-title: Triagem Adaptativa de Atendimentos
+title: Triagem adaptativa de atendimentos
 subtitle: Trabalho 4 - Aprendizagem por Reforço
-author: Grupo 4 - Brunna Moura, Carlos Cruz, Rafael Santos, Victor Bitencourt
+author: Grupo 4 - Brunna Moura, Carlos Cruz, Rafael Queiroz, Victor Bitencourt
 date: 20 de julho de 2026
 institute: Universidade do Estado da Bahia (UNEB)
 theme: Madrid
@@ -9,88 +9,150 @@ colortheme: whale
 lang: pt-BR
 ---
 
-# Introdução
+# Problema e modelagem
 
-## O Problema
-- Gestão de filas em sistemas de atendimento.
-- Recursos limitados vs. Chegadas estocásticas.
-- Conflito: Produtividade x Prioridade x Justiça.
+## Triagem com filas e prioridades distintas
 
-## Por que RL?
-- Tomada de decisão sequencial sob incerteza.
-- Impacto de longo prazo (penalidades por espera acumulam).
-- Necessidade de políticas adaptativas que superem heurísticas simples.
+- Um centro recebe chamados em três filas: baixa, média e alta prioridade.
+- O agente escolhe a regra de atendimento ou encaminha um chamado.
+- Chegadas Poisson mudam a carga; espera, descarte e encaminhamento geram custo.
+- O objetivo operacional combina volume atendido e proteção dos casos críticos.
 
-# Modelagem RL
+## A decisão atual afeta o custo futuro
 
-## Formulação MDP
-- **Estados ($S$):** Tamanhos das filas, tempos de espera, capacidade disponível (normalizados).
-- **Ações ($A$):**
-  - `serve_priority`: Atender maior prioridade.
-  - `serve_longest`: Atender fila mais longa.
-  - `refer_queue[i]`: Encaminhar chamado da fila $i$.
-- **Recompensas ($R$):**
-  - **Config A:** Foco em produtividade (+1 por chamado).
-  - **Config B:** Foco em prioridade (peso da fila).
-- **Episódios:** Turnos de 100 passos.
+- Atender uma fila reduz sua carga, mas deixa as outras acumularem espera.
+- A demanda é estocástica; uma regra fixa não antecipa todas as sequências.
+- O reward soma ganhos imediatos e penalidades que crescem ao longo do turno.
+- O episódio termina em 100 passos ou após sobrecarga prolongada.
 
-# Implementação
+## Modelagem como MDP
 
-## Ambiente Gymnasium
-- Classe `TriagemEnv` implementando o contrato `gym.Env`.
-- Dinâmica de transição via distribuição de Poisson para chegadas.
-- Renderização textual para depuração e visualização.
-- Rigorosamente testado (83+ testes unitários).
+- **Estado:** filas, espera, capacidade nominal, uso e passo.
+- **Ações:** duas regras de atendimento e dois encaminhamentos.
+- **Transições:** ação, chegadas Poisson, espera, custo e término.
+- **Desconto:** $\gamma = 0{,}99$.
 
-# Experimentos
+## Estado
 
-## Protocolo Experimental
-- **Algoritmos:** PPO e DQN (Stable-Baselines3).
-- **Baselines:** Aleatório, Prioridade Fixa, Fila Mais Longa.
-- **Reprodutibilidade:** 5 sementes (42, 123, 256, 789, 1024).
-- **Treino:** 200.000 passos por configuração.
+$$s_t = [q_0,q_1,q_2,w_0,w_1,w_2,C,C_u,t]$$
 
-# Resultados
+- $q_0\ldots q_2$: quantidade de chamados em cada fila.
+- $w_0\ldots w_2$: permanência contínua da fila em estado não vazio.
+- $C$ e $C_u$: capacidade nominal e capacidade em uso.
+- $t$: passo atual do episódio.
 
-## Curvas de Aprendizado
-![Curvas de Aprendizado](./docs/assignment/learning_curves_comparison.png)
+## Ações: Discrete(4)
 
-## Comparativo de Desempenho
-![Comparação Agentes vs Baselines](./docs/assignment/agent_vs_baselines_reward.png)
+| Ação | Operação |
+|---:|---|
+| 0 | Atender pela maior prioridade |
+| 1 | Atender a fila mais longa |
+| 2 | Encaminhar um chamado da fila 0 |
+| 3 | Encaminhar um chamado da fila 1 |
 
-## Tabela de Desempenho
-| Configuração | Reward | Taxa de Sucesso |
-|:---|:---:|:---:|
-| **PPO Produtividade (A)** | **-78.67** | **91.76%** |
-| PPO Prioridade (B) | -136.28 | 91.78% |
-| DQN Produtividade (C) | -112.65 | 91.21% |
-| Prioridade Fixa | -137.19 | 91.78% |
-| Fila Mais Longa | -416.31 | 91.78% |
-| Aleatório | -418.93 | 88.91% |
+A política atua como seletora de heurísticas. Ela não escolhe diretamente uma fila para atendimento.
 
-# Análise Qualitativa
+## Duas recompensas
 
-## Chamados Resolvidos por Fila
-![Análise por Fila](./docs/assignment/resolved_by_queue.png)
+**Produtividade**
 
-## Sucessos e Falhas
-- **Sucesso:** Equilíbrio entre filas, evitando picos de espera.
-- **Falha:** Sobrecarga estocástica extrema onde o recurso limitado impede a recuperação das filas.
-- **Generalização:** Queda de apenas 7% em semente não vista (Boa generalização).
+- +1 por atendimento local;
+- penalidade por espera acima do limiar;
+- custos de descarte, encaminhamento e ação sem efeito.
 
-# Conclusão
+**Prioridade**
 
-## Conclusões
-- O agente PPO superou significativamente as heurísticas de volume (Fila Mais Longa) e o Aleatório.
-- Superou o DQN em estabilidade e reward final.
-- Aprendeu a "ceder" em filas de baixa prioridade de forma estratégica.
+- +peso da fila atendida;
+- espera ponderada pela prioridade;
+- os mesmos custos operacionais.
 
-## Trabalhos Futuros
-- Ações de multitasking.
-- Arquiteturas recorrentes (LSTM) para lidar com memória de espera.
-- Penalidades dinâmicas baseadas em SLA (Service Level Agreement).
+# Ambiente e agentes
 
-# Obrigado!
+## Gymnasium, baselines e métricas
 
-## Perguntas?
-- Repositório: github.com/rafaelqsantos/TriagemAdaptativa
+- **TriagemEnv** implementa reset, step, render e os espaços Gymnasium.
+- Baselines: aleatória, prioridade fixa e fila mais longa.
+- O modo human exibe filas, esperas e capacidade no terminal.
+- O info separa **total_resolved**, **total_referred** e término por sobrecarga.
+- **total_served** continua contando todas as saídas por compatibilidade.
+
+## PPO e DQN
+
+- **PPO:** MlpPolicy, learning rate 3e-4, 2.048 passos por rollout, batch 64, $\gamma=0{,}99$.
+- **DQN:** MlpPolicy, learning rate 1e-3, buffer 50.000, batch 32, $\gamma=0{,}99$.
+
+# Protocolo experimental
+
+## Três configurações, cinco sementes
+
+| Configuração | Agente | Recompensa |
+|---|---|---|
+| A | PPO | produtividade |
+| B | PPO | prioridade |
+| C | DQN | produtividade |
+
+- Seeds 42, 123, 256, 789 e 1024.
+- 200.000 passos por treino; 15 modelos.
+- 100 episódios na avaliação final.
+- Seed surpresa 999, fora do treino.
+
+# Resultados e conclusões
+
+## Curvas de aprendizado
+
+![Curvas das três configurações](learning_curves_comparison.png)
+
+A recompensa de prioridade usa outra escala; a comparação direta ocorre na avaliação comum.
+
+## PPO produtividade obteve o maior reward médio
+
+![Agentes contra baselines](agent_vs_baselines_reward.png)
+
+- Configuração A: reward -78,67; custo médio 159,06; taxa de saída 91,76%.
+- A diferença entre B e prioridade fixa é menor que a dispersão entre sementes.
+
+## A distribuição por fila revela a política aprendida
+
+![Saídas registradas por fila](resolved_by_queue.png)
+
+A configuração B coincide com a prioridade fixa nas três filas. No gráfico legado, “resolvidos” significa saídas por atendimento local ou encaminhamento.
+
+## Episódios bem-sucedidos e com falha
+
+- **Três melhores:** 85 a 89 chegadas, 83 a 85 saídas, reward entre 49,4 e 58,8.
+- **Três piores:** 121 a 132 chegadas, 97 a 99 saídas, reward entre -405,2 e -479,1.
+- A associação não prova causalidade; os episódios ruins também receberam mais chamados.
+
+## Seed surpresa
+
+| Configuração | Reward | Queda | Leitura |
+|---|---:|---:|---|
+| A | -84,17 | 7,0% | moderada |
+| B | -158,10 | 16,0% | severa |
+| C | -127,25 | 13,0% | moderada |
+
+Uma seed surpresa testa uma coorte não vista; ela não demonstra generalização universal.
+
+## Ajustes aplicados sem mudar o MDP
+
+**Implementado**
+
+- contadores de resolução e encaminhamento;
+- indicador de término por sobrecarga;
+- README, relatório e slides alinhados.
+
+**Preservado para não invalidar os modelos**
+
+- capacidade liberada no mesmo passo;
+- espera agregada por fila;
+- ações de atendimento como heurísticas.
+
+## Conclusão
+
+- PPO com produtividade apresentou o maior reward e o menor custo.
+- DQN ficou em segundo lugar; PPO prioridade reproduziu a baseline fixa.
+- Os resultados publicados medem saídas, pois incluem encaminhamentos.
+- Os novos contadores melhoram a leitura sem exigir novo treino.
+- Próximo experimento: duração de serviço, capacidade persistente e ações diretas por fila.
+
+# Perguntas?

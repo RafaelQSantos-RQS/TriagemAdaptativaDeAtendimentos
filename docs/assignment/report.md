@@ -20,7 +20,7 @@ Este trabalho modela a triagem de chamados como um Processo de Decisão de Marko
 
 A Configuração A, PPO com recompensa de produtividade, obteve o maior reward na avaliação comum: -78,67, contra -112,65 da Configuração C e -136,28 da Configuração B. A Configuração A também registrou o menor custo médio, 159,06 por episódio. Os três agentes superaram as baselines aleatória e fila mais longa. A Configuração B apresentou comportamento quase igual ao da prioridade fixa. Na seed surpresa 999, as configurações A e C sofreram degradação moderada; a Configuração B sofreu queda de 16,0%.
 
-A análise encontrou duas limitações na modelagem. A variável de capacidade não restringe as decisões nas execuções padrão porque o ambiente libera no mesmo passo a unidade que aloca. O contador `total_served` também inclui encaminhamentos, embora a recompensa trate encaminhar e atender de formas distintas. Essas escolhas não invalidam a comparação executada, pois todos os métodos usaram o mesmo ambiente, mas limitam a interpretação da taxa de sucesso e do uso de recursos.
+A análise encontrou duas limitações na modelagem. A variável de capacidade não restringe as decisões nas execuções padrão porque o ambiente libera no mesmo passo a unidade que aloca. Os CSVs dos experimentos usam `total_served` para somar atendimentos e encaminhamentos, embora a recompensa trate essas operações de formas distintas. A equipe manteve esse campo por compatibilidade e acrescentou `total_resolved`, `total_referred` e `terminated_by_overload` ao `info`. A comparação executada permanece válida porque todos os métodos usaram o mesmo ambiente, mas a taxa de sucesso publicada mede saídas e não resolução local.
 
 **Palavras-chave:** aprendizagem por reforço; triagem; Gymnasium; PPO; DQN; filas.
 
@@ -146,11 +146,11 @@ As avaliações registradas terminaram no horizonte de 100 passos. O critério d
 
 A equipe criou a classe `TriagemEnv`, derivada de `gymnasium.Env`, e registrou o identificador `TriagemAdaptativa-v0`. A implementação segue a interface `reset()`, `step()`, `render()`, `observation_space` e `action_space` descrita pelo Gymnasium [2].
 
-O método `info` expõe tamanhos e esperas das filas, capacidade usada, passo, chegadas, saídas registradas, custo e saídas por fila. Os scripts usam esses campos para calcular taxa de sucesso, custo e análise por fila.
+O método `info` expõe tamanhos e esperas das filas, capacidade usada, passo, chegadas, custo e motivo de término. Ele mantém os campos legados `total_served` e `served_by_queue`, que contam todas as saídas provocadas pelo agente. Os novos campos `total_resolved`, `total_referred`, `resolved_by_queue` e `referred_by_queue` separam atendimento local de encaminhamento. O indicador `terminated_by_overload` distingue sobrecarga do término pelo horizonte.
 
 O modo `ansi` retorna uma representação textual. O modo `human` imprime a mesma estrutura no terminal. A visualização mostra barras de ocupação, espera e capacidade.
 
-Os testes automatizados cobrem contrato Gymnasium, recompensas, término, sementes, ações inválidas, baselines e contadores. Durante a revisão deste relatório, 91 testes do ambiente, das baselines e dos contadores passaram. Outros nove testes das rotinas de análise também passaram. O linter Ruff não encontrou erros.
+Os testes automatizados cobrem contrato Gymnasium, recompensas, término, sementes, ações inválidas, baselines e contadores. A revisão acrescentou casos para separar atendimento de encaminhamento e identificar término por sobrecarga. O linter Ruff não encontrou erros.
 
 # Agentes
 
@@ -229,7 +229,7 @@ As métricas usadas foram:
 - quantidade média registrada por fila;
 - desempenho na seed surpresa.
 
-O contador `total_served` inclui atendimentos e encaminhamentos. A taxa de sucesso mede, portanto, a proporção de chamados que saíram das filas pela ação do agente. Ela não separa resolução local de encaminhamento.
+Os CSVs usados neste relatório foram gerados antes da separação dos contadores. Neles, `total_served` inclui atendimentos e encaminhamentos. A taxa de sucesso mede a proporção de chamados que saíram das filas pela ação do agente. Novas avaliações podem calcular taxa de resolução com `total_resolved` e taxa de encaminhamento com `total_referred`, sem alterar os modelos treinados.
 
 ## Seed surpresa
 
@@ -339,9 +339,9 @@ O vetor guarda um contador por fila. Ele não guarda a idade de cada chamado. Um
 
 ## Encaminhamento e taxa de sucesso
 
-O código incrementa `total_served` quando encaminha um chamado, mas aplica apenas o custo de encaminhamento na recompensa. A taxa de sucesso agrega atendimento local e encaminhamento. O relatório interpreta essa métrica como taxa de saída registrada.
+O ambiente mantém `total_served` como contador legado de todas as saídas e aplica apenas o custo de encaminhamento quando o agente transfere um chamado. A taxa de sucesso publicada agrega atendimento local e encaminhamento, por isso o relatório a interpreta como taxa de saída registrada.
 
-Uma revisão deve criar `total_referred` e manter `total_resolved` apenas para atendimentos locais. A avaliação passaria a publicar taxa de resolução, taxa de encaminhamento e taxa de abandono. O mesmo ajuste permitiria calcular o custo de cada operação sem inferência.
+A equipe acrescentou `total_resolved` e `total_referred` ao `info`, além dos vetores por fila. Esses campos não alteram estado, transições, recompensa ou ações. Os CSVs e gráficos existentes continuam baseados no contador legado; uma nova avaliação pode publicar taxas separadas sem retreinar os agentes.
 
 ## Espaço de ações
 
@@ -365,7 +365,7 @@ A equipe manteve no texto as limitações encontradas durante a revisão. Os scr
 
 O projeto implementou um ambiente próprio de triagem, treinou PPO e DQN e comparou seis métodos sob um protocolo com cinco sementes. A Configuração A apresentou o melhor resultado final e a menor degradação na seed surpresa. A Configuração B convergiu para a prioridade fixa, enquanto o DQN ocupou a segunda posição na avaliação comum.
 
-Os resultados sustentam aprendizado dentro da dinâmica implementada. A interpretação deve considerar a capacidade nominal sem efeito persistente e a inclusão de encaminhamentos em `total_served`. As próximas versões precisam corrigir essas duas escolhas e repetir o protocolo antes de comparar os números com os atuais.
+Os resultados sustentam aprendizado dentro da dinâmica implementada. A interpretação deve considerar a capacidade nominal sem efeito persistente e a semântica legada de `total_served` nos resultados publicados. Os contadores separados e o indicador de sobrecarga melhoram a rastreabilidade sem mudar o MDP. Uma versão com capacidade persistente exigirá novo treino e novos resultados.
 
 # Referências
 
@@ -383,7 +383,7 @@ Os resultados sustentam aprendizado dentro da dinâmica implementada. A interpre
 
 # Apêndice A - Execução
 
-Instalação com o arquivo equivalente a `requirements.txt`:
+Instalação pelas dependências declaradas em `pyproject.toml` e fixadas em `uv.lock`:
 
 ```bash
 uv sync
